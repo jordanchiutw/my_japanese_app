@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 日文五十音複習 | 最後更新：2026-06-26 15:01 (UTC+8) -->
+<!-- 日文五十音複習 | 最後更新：2026-06-26 15:06 (UTC+8) -->
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -11,6 +11,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 
 /* ── Tabs ── */
 .tabs{display:flex;background:#fff;border-bottom:1px solid #e0ddd8;position:sticky;top:0;z-index:20;}
+.sticky-toolbar{background:#fff;border-bottom:1px solid #e8e6e0;padding:8px 10px 6px;position:sticky;top:46px;z-index:19;display:none;}
+.sticky-toolbar.visible{display:block;}
 .tab{flex:1;padding:11px 2px;font-size:11px;border:none;background:none;color:#999;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;}
 .tab.active{color:#1a1a1a;border-bottom:2px solid #4A44A8;font-weight:700;}
 .panel{display:none;padding:12px 10px 24px;}
@@ -163,12 +165,8 @@ input[type=range].speed-slider{flex:1;height:4px;accent-color:#534AB7;cursor:poi
   <button class="tab" onclick="showTab('words')">單字字卡</button>
 </div>
 
-<!-- ══════════ 五十音表 ══════════ -->
-<div class="panel active" id="tab-select">
-  <div class="filter-bar">
-    <button class="fpill on-h" id="fp-h" onclick="toggleFilter('h')">平假名 ひ</button>
-    <button class="fpill on-k" id="fp-k" onclick="toggleFilter('k')">片假名 カ</button>
-  </div>
+<!-- ══ 固定工具列 ══ -->
+<div class="sticky-toolbar" id="sticky-toolbar">
   <div class="setting-row">
     <div class="stoggle on" id="st-sound" onclick="toggleSetting('sound')">
       <span class="stoggle-dot"></span>🔊 發音
@@ -178,10 +176,18 @@ input[type=range].speed-slider{flex:1;height:4px;accent-color:#534AB7;cursor:poi
     </div>
   </div>
   <div class="speed-row">
-    <span class="speed-lbl">🐢 語速</span>
+    <span class="speed-lbl">🐢</span>
     <input type="range" class="speed-slider" id="speed-slider" min="0.3" max="1.2" step="0.05" value="0.75" oninput="updateSpeed(this.value)">
-    <span class="speed-val" id="speed-val">0.75</span>
     <span class="speed-lbl">🐇</span>
+    <span class="speed-val" id="speed-val">0.75</span>
+  </div>
+</div>
+
+<!-- ══════════ 五十音表 ══════════ -->
+<div class="panel active" id="tab-select">
+  <div class="filter-bar">
+    <button class="fpill on-h" id="fp-h" onclick="toggleFilter('h')">平假名 ひ</button>
+    <button class="fpill on-k" id="fp-k" onclick="toggleFilter('k')">片假名 カ</button>
   </div>
   <div class="hint">點格子聽發音・點行標題（如「あ行」）選取/取消整行</div>
 
@@ -601,64 +607,62 @@ function updateSpeed(val){
   _speakRate = parseFloat(val);
   document.getElementById('speed-val').textContent = parseFloat(val).toFixed(2);
 }
-let _speakTimer = null;
 function speak(txt, roma){
   if(roma && settingToast) showToast(txt, roma);
   if(!settingSound) return;
   if(!window.speechSynthesis) return;
 
-  // 取消目前播放，短暫等待後再播新的
+  // 建立 utterance 先，確保在 user gesture 的 call stack 內
+  const u = new SpeechSynthesisUtterance(txt);
+  u.lang = 'ja-JP';
+  u.rate = _speakRate;
+  u.pitch = 1.0;
+  u.volume = 1.0;
+  if(_jpVoice) u.voice = _jpVoice;
+
+  // cancel 後直接 speak（不用 setTimeout）
   speechSynthesis.cancel();
-  if(_speakTimer) clearTimeout(_speakTimer);
-  _speakTimer = setTimeout(()=>{
-    const u = new SpeechSynthesisUtterance(txt);
-    u.lang = 'ja-JP';
-    u.rate = _speakRate;
-    u.pitch = 1.0;
-    u.volume = 1.0;
-    if(_jpVoice) u.voice = _jpVoice;
-    speechSynthesis.speak(u);
-  }, 50);
+  speechSynthesis.speak(u);
 }
 let toastTimer=null;
-let _toast=null;
 function showToast(char, roma){
   if(toastTimer){ clearTimeout(toastTimer); toastTimer=null; }
 
-  if(!_toast){
-    _toast=document.createElement('div');
-    _toast.style.cssText=[
-      'position:fixed',
-      'bottom:64px',
-      'left:10%','right:10%',
-      'width:80%',
-      'margin:0 auto',
+  // 放在 sticky-toolbar 裡，跟著頁面走，不用 fixed
+  const toolbarId = 'toast-inline';
+  let el = document.getElementById(toolbarId);
+  if(!el){
+    el = document.createElement('div');
+    el.id = toolbarId;
+    el.style.cssText = [
       'background:rgba(26,22,70,0.92)',
       'color:#fff',
-      'padding:12px 24px',
-      'border-radius:16px',
-      'z-index:9999',
+      'border-radius:14px',
+      'padding:10px 20px',
+      'margin-top:6px',
       'text-align:center',
       'pointer-events:none',
-      'box-shadow:0 4px 20px rgba(0,0,0,0.25)',
       'opacity:0',
-      'transition:opacity 0.15s ease'
+      'transition:opacity 0.15s ease',
+      'width:100%',
+      'box-sizing:border-box'
     ].join(';');
-    document.body.appendChild(_toast);
+    // 插入在 sticky-toolbar 的最後
+    const toolbar = document.getElementById('sticky-toolbar');
+    if(toolbar) toolbar.appendChild(el);
+    else document.body.appendChild(el);
   }
 
-  _toast.innerHTML=
-    `<span style="font-size:30px;display:block;line-height:1.2;margin-bottom:4px">${char}</span>`+
-    `<span style="font-size:13px;opacity:0.85;font-family:monospace;letter-spacing:0.06em">${roma}</span>`;
+  el.innerHTML =
+    `<span style="font-size:28px;display:inline-block;vertical-align:middle;margin-right:10px">${char}</span>`+
+    `<span style="font-size:14px;font-family:monospace;letter-spacing:0.08em;vertical-align:middle;opacity:0.9">${roma}</span>`;
 
-  // 強制 reflow → 淡入
-  _toast.style.opacity='0';
-  _toast.offsetHeight; // trigger reflow
-  _toast.style.opacity='1';
+  el.offsetHeight;
+  el.style.opacity = '1';
 
-  toastTimer=setTimeout(()=>{
-    _toast.style.opacity='0';
-  }, 2200);
+  toastTimer = setTimeout(()=>{
+    el.style.opacity = '0';
+  }, 2000);
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function showTab(name){
@@ -666,6 +670,8 @@ function showTab(name){
     document.querySelectorAll('.tab')[i].classList.toggle('active',n===name);
     document.getElementById('tab-'+n).classList.toggle('active',n===name);
   });
+  // 只在五十音表顯示工具列
+  document.getElementById('sticky-toolbar').classList.toggle('visible', name==='select');
 }
 
 /* ═══════════════════════════════
@@ -958,11 +964,12 @@ function nextWord(){wIdx=(wIdx+1)%wFiltered.length;showWD();}
 
 /* ── Init ── */
 initSelect();
+document.getElementById('sticky-toolbar').classList.add('visible');
 setStrokeType('h');
 setQType('h');
 renderCats();
 renderWords();
 </script>
 </body>
-<!-- build: 2026-06-26 15:01 UTC+8 -->
+<!-- build: 2026-06-26 15:06 UTC+8 -->
 </html>
