@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 日文五十音複習 | 最後更新：2026-06-26 15:06 (UTC+8) -->
+<!-- 日文五十音複習 | 最後更新：2026-06-26 15:58 (UTC+8) -->
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -723,7 +723,8 @@ function buildTable(tableId, data, cols, sec){
       style="${allSel?'outline:2px solid #1a1a1a;outline-offset:1px;':''}">${row.row}</div></td>`;
     row.cells.forEach((c,ci)=>{
       if(!c){html+=`<td style="width:60px"><div class="kc-empty"></div></td>`;return;}
-      html+=`<td style="width:60px"><div class="kc" onclick="toggleCell('${sec}',${ri},${ci},'${c.h}','${c.r}')"><div class="dual">${showH?`<span class="h">${c.h}</span>`:''} ${showK?`<span class="k">${c.k}</span>`:''}<span class="r">${c.r}</span></div></div></td>`;
+      const displayChar = (!showH && showK) ? c.k : c.h;
+      html+=`<td style="width:60px"><div class="kc" onclick="toggleCell('${sec}',${ri},${ci},'${displayChar}','${c.r}')"><div class="dual">${showH?`<span class="h">${c.h}</span>`:''} ${showK?`<span class="k">${c.k}</span>`:''}<span class="r">${c.r}</span></div></div></td>`;
     });
     html+='</tr>';
   });
@@ -971,5 +972,5 @@ renderCats();
 renderWords();
 </script>
 </body>
-<!-- build: 2026-06-26 15:06 UTC+8 -->
+<!-- build: 2026-06-26 15:58 UTC+8 -->
 </html>
