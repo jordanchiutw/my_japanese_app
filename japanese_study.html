@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0058)file:///C:/Users/jordan.chiu/Downloads/japanese_study.html -->
-<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>日文五十音複習</title>
 <style>
@@ -53,11 +53,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .dual .r{font-size:8px;color:#bbb;margin-top:0;}
 
 /* top filter pills */
-.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.filter-bar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
 .fpill{padding:6px 14px;font-size:12px;border:1.5px solid #ccc;border-radius:99px;cursor:pointer;background:#fff;color:#666;font-weight:500;}
 .fpill.on-h{background:#EEEDFE;border-color:#534AB7;color:#26215C;}
 .fpill.on-k{background:#FFF3E8;border-color:#C45C00;color:#7A3800;}
 .hint{font-size:11px;color:#aaa;margin-bottom:8px;}
+/* settings toggle row */
+.setting-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;}
+.stoggle{display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12px;border:1.5px solid #ddd;border-radius:99px;cursor:pointer;background:#fff;color:#666;user-select:none;}
+.stoggle.on{background:#E8F5E9;border-color:#388E3C;color:#1B5E20;}
+.stoggle-dot{width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0;transition:background 0.15s;}
+.stoggle.on .stoggle-dot{background:#388E3C;}
+/* toast - 用 position:fixed 但要確保在正確位置 */
+#speak-toast{position:fixed !important;left:50% !important;transform:translateX(-50%) !important;bottom:60px !important;}
 
 /* ── 學筆畫 ── */
 .tri-toggle{display:flex;gap:6px;margin-bottom:12px;}
@@ -140,54 +148,62 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 <body>
 
 <div class="tabs">
-  <button class="tab active" onclick="showTab(&#39;select&#39;)">五十音表</button>
-  <button class="tab" onclick="showTab(&#39;stroke&#39;)">學筆畫</button>
-  <button class="tab" onclick="showTab(&#39;quiz&#39;)">測驗</button>
-  <button class="tab" onclick="showTab(&#39;words&#39;)">單字字卡</button>
+  <button class="tab active" onclick="showTab('select')">五十音表</button>
+  <button class="tab" onclick="showTab('stroke')">學筆畫</button>
+  <button class="tab" onclick="showTab('quiz')">測驗</button>
+  <button class="tab" onclick="showTab('words')">單字字卡</button>
 </div>
 
 <!-- ══════════ 五十音表 ══════════ -->
 <div class="panel active" id="tab-select">
   <div class="filter-bar">
-    <button class="fpill on-h" id="fp-h" onclick="toggleFilter(&#39;h&#39;)">平假名 ひ</button>
-    <button class="fpill on-k" id="fp-k" onclick="toggleFilter(&#39;k&#39;)">片假名 カ</button>
+    <button class="fpill on-h" id="fp-h" onclick="toggleFilter('h')">平假名 ひ</button>
+    <button class="fpill on-k" id="fp-k" onclick="toggleFilter('k')">片假名 カ</button>
+  </div>
+  <div class="setting-row">
+    <div class="stoggle on" id="st-sound" onclick="toggleSetting('sound')">
+      <span class="stoggle-dot"></span>🔊 發音
+    </div>
+    <div class="stoggle on" id="st-toast" onclick="toggleSetting('toast')">
+      <span class="stoggle-dot"></span>💬 顯示提示
+    </div>
   </div>
   <div class="hint">點格子聽發音・點行標題（如「あ行」）選取/取消整行</div>
 
   <!-- 1. 清音 -->
   <div class="chart-section sec-sei" id="sec-sei">
     <div class="chart-title" style="background:#FFE0CC;color:#7A3800">1. 清音</div>
-    <div class="chart-scroll"><table class="chart-table" id="tbl-sei"><tbody><tr><th style="width:44px;padding:0"></th><th class="col-hd" style="width:60px">あ段</th><th class="col-hd" style="width:60px">い段</th><th class="col-hd" style="width:60px">う段</th><th class="col-hd" style="width:60px">え段</th><th class="col-hd" style="width:60px">お段</th></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,0)" style="outline:2px solid #1a1a1a;outline-offset:1px;">あ行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,0,0,&#39;あ&#39;,&#39;a&#39;)"><div class="dual"><span class="h">あ</span> <span class="k">ア</span><span class="r">a</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,0,1,&#39;い&#39;,&#39;i&#39;)"><div class="dual"><span class="h">い</span> <span class="k">イ</span><span class="r">i</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,0,2,&#39;う&#39;,&#39;u&#39;)"><div class="dual"><span class="h">う</span> <span class="k">ウ</span><span class="r">u</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,0,3,&#39;え&#39;,&#39;e&#39;)"><div class="dual"><span class="h">え</span> <span class="k">エ</span><span class="r">e</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,0,4,&#39;お&#39;,&#39;o&#39;)"><div class="dual"><span class="h">お</span> <span class="k">オ</span><span class="r">o</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,1)" style="outline:2px solid #1a1a1a;outline-offset:1px;">か行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,1,0,&#39;か&#39;,&#39;ka&#39;)"><div class="dual"><span class="h">か</span> <span class="k">カ</span><span class="r">ka</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,1,1,&#39;き&#39;,&#39;ki&#39;)"><div class="dual"><span class="h">き</span> <span class="k">キ</span><span class="r">ki</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,1,2,&#39;く&#39;,&#39;ku&#39;)"><div class="dual"><span class="h">く</span> <span class="k">ク</span><span class="r">ku</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,1,3,&#39;け&#39;,&#39;ke&#39;)"><div class="dual"><span class="h">け</span> <span class="k">ケ</span><span class="r">ke</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,1,4,&#39;こ&#39;,&#39;ko&#39;)"><div class="dual"><span class="h">こ</span> <span class="k">コ</span><span class="r">ko</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,2)" style="outline:2px solid #1a1a1a;outline-offset:1px;">さ行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,2,0,&#39;さ&#39;,&#39;sa&#39;)"><div class="dual"><span class="h">さ</span> <span class="k">サ</span><span class="r">sa</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,2,1,&#39;し&#39;,&#39;shi&#39;)"><div class="dual"><span class="h">し</span> <span class="k">シ</span><span class="r">shi</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,2,2,&#39;す&#39;,&#39;su&#39;)"><div class="dual"><span class="h">す</span> <span class="k">ス</span><span class="r">su</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,2,3,&#39;せ&#39;,&#39;se&#39;)"><div class="dual"><span class="h">せ</span> <span class="k">セ</span><span class="r">se</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,2,4,&#39;そ&#39;,&#39;so&#39;)"><div class="dual"><span class="h">そ</span> <span class="k">ソ</span><span class="r">so</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,3)" style="outline:2px solid #1a1a1a;outline-offset:1px;">た行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,3,0,&#39;た&#39;,&#39;ta&#39;)"><div class="dual"><span class="h">た</span> <span class="k">タ</span><span class="r">ta</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,3,1,&#39;ち&#39;,&#39;chi&#39;)"><div class="dual"><span class="h">ち</span> <span class="k">チ</span><span class="r">chi</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,3,2,&#39;つ&#39;,&#39;tsu&#39;)"><div class="dual"><span class="h">つ</span> <span class="k">ツ</span><span class="r">tsu</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,3,3,&#39;て&#39;,&#39;te&#39;)"><div class="dual"><span class="h">て</span> <span class="k">テ</span><span class="r">te</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,3,4,&#39;と&#39;,&#39;to&#39;)"><div class="dual"><span class="h">と</span> <span class="k">ト</span><span class="r">to</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,4)" style="outline:2px solid #1a1a1a;outline-offset:1px;">な行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,4,0,&#39;な&#39;,&#39;na&#39;)"><div class="dual"><span class="h">な</span> <span class="k">ナ</span><span class="r">na</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,4,1,&#39;に&#39;,&#39;ni&#39;)"><div class="dual"><span class="h">に</span> <span class="k">ニ</span><span class="r">ni</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,4,2,&#39;ぬ&#39;,&#39;nu&#39;)"><div class="dual"><span class="h">ぬ</span> <span class="k">ヌ</span><span class="r">nu</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,4,3,&#39;ね&#39;,&#39;ne&#39;)"><div class="dual"><span class="h">ね</span> <span class="k">ネ</span><span class="r">ne</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,4,4,&#39;の&#39;,&#39;no&#39;)"><div class="dual"><span class="h">の</span> <span class="k">ノ</span><span class="r">no</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,5)" style="outline:2px solid #1a1a1a;outline-offset:1px;">は行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,5,0,&#39;は&#39;,&#39;ha&#39;)"><div class="dual"><span class="h">は</span> <span class="k">ハ</span><span class="r">ha</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,5,1,&#39;ひ&#39;,&#39;hi&#39;)"><div class="dual"><span class="h">ひ</span> <span class="k">ヒ</span><span class="r">hi</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,5,2,&#39;ふ&#39;,&#39;fu&#39;)"><div class="dual"><span class="h">ふ</span> <span class="k">フ</span><span class="r">fu</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,5,3,&#39;へ&#39;,&#39;he&#39;)"><div class="dual"><span class="h">へ</span> <span class="k">ヘ</span><span class="r">he</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,5,4,&#39;ほ&#39;,&#39;ho&#39;)"><div class="dual"><span class="h">ほ</span> <span class="k">ホ</span><span class="r">ho</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,6)" style="outline:2px solid #1a1a1a;outline-offset:1px;">ま行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,6,0,&#39;ま&#39;,&#39;ma&#39;)"><div class="dual"><span class="h">ま</span> <span class="k">マ</span><span class="r">ma</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,6,1,&#39;み&#39;,&#39;mi&#39;)"><div class="dual"><span class="h">み</span> <span class="k">ミ</span><span class="r">mi</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,6,2,&#39;む&#39;,&#39;mu&#39;)"><div class="dual"><span class="h">む</span> <span class="k">ム</span><span class="r">mu</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,6,3,&#39;め&#39;,&#39;me&#39;)"><div class="dual"><span class="h">め</span> <span class="k">メ</span><span class="r">me</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,6,4,&#39;も&#39;,&#39;mo&#39;)"><div class="dual"><span class="h">も</span> <span class="k">モ</span><span class="r">mo</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,7)" style="outline:2px solid #1a1a1a;outline-offset:1px;">や行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,7,0,&#39;や&#39;,&#39;ya&#39;)"><div class="dual"><span class="h">や</span> <span class="k">ヤ</span><span class="r">ya</span></div></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,7,2,&#39;ゆ&#39;,&#39;yu&#39;)"><div class="dual"><span class="h">ゆ</span> <span class="k">ユ</span><span class="r">yu</span></div></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,7,4,&#39;よ&#39;,&#39;yo&#39;)"><div class="dual"><span class="h">よ</span> <span class="k">ヨ</span><span class="r">yo</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,8)" style="outline:2px solid #1a1a1a;outline-offset:1px;">ら行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,8,0,&#39;ら&#39;,&#39;ra&#39;)"><div class="dual"><span class="h">ら</span> <span class="k">ラ</span><span class="r">ra</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,8,1,&#39;り&#39;,&#39;ri&#39;)"><div class="dual"><span class="h">り</span> <span class="k">リ</span><span class="r">ri</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,8,2,&#39;る&#39;,&#39;ru&#39;)"><div class="dual"><span class="h">る</span> <span class="k">ル</span><span class="r">ru</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,8,3,&#39;れ&#39;,&#39;re&#39;)"><div class="dual"><span class="h">れ</span> <span class="k">レ</span><span class="r">re</span></div></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,8,4,&#39;ろ&#39;,&#39;ro&#39;)"><div class="dual"><span class="h">ろ</span> <span class="k">ロ</span><span class="r">ro</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,9)" style="outline:2px solid #1a1a1a;outline-offset:1px;">わ行</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,9,0,&#39;わ&#39;,&#39;wa&#39;)"><div class="dual"><span class="h">わ</span> <span class="k">ワ</span><span class="r">wa</span></div></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,9,4,&#39;を&#39;,&#39;wo&#39;)"><div class="dual"><span class="h">を</span> <span class="k">ヲ</span><span class="r">wo</span></div></div></td></tr><tr><td><div class="row-hd " onclick="toggleRow(&#39;sei&#39;,SEI,10)" style="outline:2px solid #1a1a1a;outline-offset:1px;">ん</div></td><td style="width:60px"><div class="kc selected" onclick="toggleCell(&#39;sei&#39;,10,0,&#39;ん&#39;,&#39;n&#39;)"><div class="dual"><span class="h">ん</span> <span class="k">ン</span><span class="r">n</span></div></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc-empty"></div></td><td style="width:60px"><div class="kc-empty"></div></td></tr></tbody></table></div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-sei"></table></div>
   </div>
 
   <!-- 2. 濁音 -->
   <div class="chart-section sec-daku" id="sec-daku">
     <div class="chart-title" style="background:#D8EED8;color:#1A5C1A">2. 濁音</div>
-    <div class="chart-scroll"><table class="chart-table" id="tbl-daku"><tbody><tr><th style="width:44px;padding:0"></th><th class="col-hd" style="width:60px">あ段</th><th class="col-hd" style="width:60px">い段</th><th class="col-hd" style="width:60px">う段</th><th class="col-hd" style="width:60px">え段</th><th class="col-hd" style="width:60px">お段</th></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;daku&#39;,DAKU,0)" style="">が行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,0,0,&#39;が&#39;,&#39;ga&#39;)"><div class="dual"><span class="h">が</span> <span class="k">ガ</span><span class="r">ga</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,0,1,&#39;ぎ&#39;,&#39;gi&#39;)"><div class="dual"><span class="h">ぎ</span> <span class="k">ギ</span><span class="r">gi</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,0,2,&#39;ぐ&#39;,&#39;gu&#39;)"><div class="dual"><span class="h">ぐ</span> <span class="k">グ</span><span class="r">gu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,0,3,&#39;げ&#39;,&#39;ge&#39;)"><div class="dual"><span class="h">げ</span> <span class="k">ゲ</span><span class="r">ge</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,0,4,&#39;ご&#39;,&#39;go&#39;)"><div class="dual"><span class="h">ご</span> <span class="k">ゴ</span><span class="r">go</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;daku&#39;,DAKU,1)" style="">ざ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,1,0,&#39;ざ&#39;,&#39;za&#39;)"><div class="dual"><span class="h">ざ</span> <span class="k">ザ</span><span class="r">za</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,1,1,&#39;じ&#39;,&#39;ji&#39;)"><div class="dual"><span class="h">じ</span> <span class="k">ジ</span><span class="r">ji</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,1,2,&#39;ず&#39;,&#39;zu&#39;)"><div class="dual"><span class="h">ず</span> <span class="k">ズ</span><span class="r">zu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,1,3,&#39;ぜ&#39;,&#39;ze&#39;)"><div class="dual"><span class="h">ぜ</span> <span class="k">ゼ</span><span class="r">ze</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,1,4,&#39;ぞ&#39;,&#39;zo&#39;)"><div class="dual"><span class="h">ぞ</span> <span class="k">ゾ</span><span class="r">zo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;daku&#39;,DAKU,2)" style="">だ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,2,0,&#39;だ&#39;,&#39;da&#39;)"><div class="dual"><span class="h">だ</span> <span class="k">ダ</span><span class="r">da</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,2,1,&#39;ぢ&#39;,&#39;ji&#39;)"><div class="dual"><span class="h">ぢ</span> <span class="k">ヂ</span><span class="r">ji</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,2,2,&#39;づ&#39;,&#39;zu&#39;)"><div class="dual"><span class="h">づ</span> <span class="k">ヅ</span><span class="r">zu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,2,3,&#39;で&#39;,&#39;de&#39;)"><div class="dual"><span class="h">で</span> <span class="k">デ</span><span class="r">de</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,2,4,&#39;ど&#39;,&#39;do&#39;)"><div class="dual"><span class="h">ど</span> <span class="k">ド</span><span class="r">do</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;daku&#39;,DAKU,3)" style="">ば行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,3,0,&#39;ば&#39;,&#39;ba&#39;)"><div class="dual"><span class="h">ば</span> <span class="k">バ</span><span class="r">ba</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,3,1,&#39;び&#39;,&#39;bi&#39;)"><div class="dual"><span class="h">び</span> <span class="k">ビ</span><span class="r">bi</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,3,2,&#39;ぶ&#39;,&#39;bu&#39;)"><div class="dual"><span class="h">ぶ</span> <span class="k">ブ</span><span class="r">bu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,3,3,&#39;べ&#39;,&#39;be&#39;)"><div class="dual"><span class="h">べ</span> <span class="k">ベ</span><span class="r">be</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;daku&#39;,3,4,&#39;ぼ&#39;,&#39;bo&#39;)"><div class="dual"><span class="h">ぼ</span> <span class="k">ボ</span><span class="r">bo</span></div></div></td></tr></tbody></table></div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-daku"></table></div>
   </div>
 
   <!-- 3. 半濁音 -->
   <div class="chart-section sec-han" id="sec-han">
     <div class="chart-title" style="background:#FFD8E8;color:#8C1C50">3. 半濁音</div>
-    <div class="chart-scroll"><table class="chart-table" id="tbl-han"><tbody><tr><th style="width:44px;padding:0"></th><th class="col-hd" style="width:60px">あ段</th><th class="col-hd" style="width:60px">い段</th><th class="col-hd" style="width:60px">う段</th><th class="col-hd" style="width:60px">え段</th><th class="col-hd" style="width:60px">お段</th></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;han&#39;,HAN,0)" style="">ぱ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;han&#39;,0,0,&#39;ぱ&#39;,&#39;pa&#39;)"><div class="dual"><span class="h">ぱ</span> <span class="k">パ</span><span class="r">pa</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;han&#39;,0,1,&#39;ぴ&#39;,&#39;pi&#39;)"><div class="dual"><span class="h">ぴ</span> <span class="k">ピ</span><span class="r">pi</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;han&#39;,0,2,&#39;ぷ&#39;,&#39;pu&#39;)"><div class="dual"><span class="h">ぷ</span> <span class="k">プ</span><span class="r">pu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;han&#39;,0,3,&#39;ぺ&#39;,&#39;pe&#39;)"><div class="dual"><span class="h">ぺ</span> <span class="k">ペ</span><span class="r">pe</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;han&#39;,0,4,&#39;ぽ&#39;,&#39;po&#39;)"><div class="dual"><span class="h">ぽ</span> <span class="k">ポ</span><span class="r">po</span></div></div></td></tr></tbody></table></div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-han"></table></div>
   </div>
 
   <!-- 4. 拗音 -->
   <div class="chart-section sec-you" id="sec-you">
     <div class="chart-title" style="background:#D8E8FF;color:#1A3C8C">4. 拗音</div>
-    <div class="chart-scroll"><table class="chart-table" id="tbl-you"><tbody><tr><th style="width:44px;padding:0"></th><th class="col-hd" style="width:60px">〜や</th><th class="col-hd" style="width:60px">〜ゆ</th><th class="col-hd" style="width:60px">〜よ</th></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,0)" style="">きゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,0,0,&#39;きゃ&#39;,&#39;kya&#39;)"><div class="dual"><span class="h">きゃ</span> <span class="k">キャ</span><span class="r">kya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,0,1,&#39;きゅ&#39;,&#39;kyu&#39;)"><div class="dual"><span class="h">きゅ</span> <span class="k">キュ</span><span class="r">kyu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,0,2,&#39;きょ&#39;,&#39;kyo&#39;)"><div class="dual"><span class="h">きょ</span> <span class="k">キョ</span><span class="r">kyo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,1)" style="">しゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,1,0,&#39;しゃ&#39;,&#39;sha&#39;)"><div class="dual"><span class="h">しゃ</span> <span class="k">シャ</span><span class="r">sha</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,1,1,&#39;しゅ&#39;,&#39;shu&#39;)"><div class="dual"><span class="h">しゅ</span> <span class="k">シュ</span><span class="r">shu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,1,2,&#39;しょ&#39;,&#39;sho&#39;)"><div class="dual"><span class="h">しょ</span> <span class="k">ショ</span><span class="r">sho</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,2)" style="">ちゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,2,0,&#39;ちゃ&#39;,&#39;cha&#39;)"><div class="dual"><span class="h">ちゃ</span> <span class="k">チャ</span><span class="r">cha</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,2,1,&#39;ちゅ&#39;,&#39;chu&#39;)"><div class="dual"><span class="h">ちゅ</span> <span class="k">チュ</span><span class="r">chu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,2,2,&#39;ちょ&#39;,&#39;cho&#39;)"><div class="dual"><span class="h">ちょ</span> <span class="k">チョ</span><span class="r">cho</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,3)" style="">にゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,3,0,&#39;にゃ&#39;,&#39;nya&#39;)"><div class="dual"><span class="h">にゃ</span> <span class="k">ニャ</span><span class="r">nya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,3,1,&#39;にゅ&#39;,&#39;nyu&#39;)"><div class="dual"><span class="h">にゅ</span> <span class="k">ニュ</span><span class="r">nyu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,3,2,&#39;にょ&#39;,&#39;nyo&#39;)"><div class="dual"><span class="h">にょ</span> <span class="k">ニョ</span><span class="r">nyo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,4)" style="">ひゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,4,0,&#39;ひゃ&#39;,&#39;hya&#39;)"><div class="dual"><span class="h">ひゃ</span> <span class="k">ヒャ</span><span class="r">hya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,4,1,&#39;ひゅ&#39;,&#39;hyu&#39;)"><div class="dual"><span class="h">ひゅ</span> <span class="k">ヒュ</span><span class="r">hyu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,4,2,&#39;ひょ&#39;,&#39;hyo&#39;)"><div class="dual"><span class="h">ひょ</span> <span class="k">ヒョ</span><span class="r">hyo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,5)" style="">みゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,5,0,&#39;みゃ&#39;,&#39;mya&#39;)"><div class="dual"><span class="h">みゃ</span> <span class="k">ミャ</span><span class="r">mya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,5,1,&#39;みゅ&#39;,&#39;myu&#39;)"><div class="dual"><span class="h">みゅ</span> <span class="k">ミュ</span><span class="r">myu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,5,2,&#39;みょ&#39;,&#39;myo&#39;)"><div class="dual"><span class="h">みょ</span> <span class="k">ミョ</span><span class="r">myo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,6)" style="">りゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,6,0,&#39;りゃ&#39;,&#39;rya&#39;)"><div class="dual"><span class="h">りゃ</span> <span class="k">リャ</span><span class="r">rya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,6,1,&#39;りゅ&#39;,&#39;ryu&#39;)"><div class="dual"><span class="h">りゅ</span> <span class="k">リュ</span><span class="r">ryu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,6,2,&#39;りょ&#39;,&#39;ryo&#39;)"><div class="dual"><span class="h">りょ</span> <span class="k">リョ</span><span class="r">ryo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,7)" style="">ぎゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,7,0,&#39;ぎゃ&#39;,&#39;gya&#39;)"><div class="dual"><span class="h">ぎゃ</span> <span class="k">ギャ</span><span class="r">gya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,7,1,&#39;ぎゅ&#39;,&#39;gyu&#39;)"><div class="dual"><span class="h">ぎゅ</span> <span class="k">ギュ</span><span class="r">gyu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,7,2,&#39;ぎょ&#39;,&#39;gyo&#39;)"><div class="dual"><span class="h">ぎょ</span> <span class="k">ギョ</span><span class="r">gyo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,8)" style="">じゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,8,0,&#39;じゃ&#39;,&#39;ja&#39;)"><div class="dual"><span class="h">じゃ</span> <span class="k">ジャ</span><span class="r">ja</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,8,1,&#39;じゅ&#39;,&#39;ju&#39;)"><div class="dual"><span class="h">じゅ</span> <span class="k">ジュ</span><span class="r">ju</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,8,2,&#39;じょ&#39;,&#39;jo&#39;)"><div class="dual"><span class="h">じょ</span> <span class="k">ジョ</span><span class="r">jo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,9)" style="">びゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,9,0,&#39;びゃ&#39;,&#39;bya&#39;)"><div class="dual"><span class="h">びゃ</span> <span class="k">ビャ</span><span class="r">bya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,9,1,&#39;びゅ&#39;,&#39;byu&#39;)"><div class="dual"><span class="h">びゅ</span> <span class="k">ビュ</span><span class="r">byu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,9,2,&#39;びょ&#39;,&#39;byo&#39;)"><div class="dual"><span class="h">びょ</span> <span class="k">ビョ</span><span class="r">byo</span></div></div></td></tr><tr><td><div class="row-hd opacity-70" onclick="toggleRow(&#39;you&#39;,YOU,10)" style="">ぴゃ行</div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,10,0,&#39;ぴゃ&#39;,&#39;pya&#39;)"><div class="dual"><span class="h">ぴゃ</span> <span class="k">ピャ</span><span class="r">pya</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,10,1,&#39;ぴゅ&#39;,&#39;pyu&#39;)"><div class="dual"><span class="h">ぴゅ</span> <span class="k">ピュ</span><span class="r">pyu</span></div></div></td><td style="width:60px"><div class="kc " onclick="toggleCell(&#39;you&#39;,10,2,&#39;ぴょ&#39;,&#39;pyo&#39;)"><div class="dual"><span class="h">ぴょ</span> <span class="k">ピョ</span><span class="r">pyo</span></div></div></td></tr></tbody></table></div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-you"></table></div>
   </div>
 </div>
 
 <!-- ══════════ 學筆畫 ══════════ -->
 <div class="panel" id="tab-stroke">
   <div class="tri-toggle" style="max-width:260px">
-    <button class="tri-btn active" id="btn-shira" onclick="setStrokeType(&#39;h&#39;)">平假名</button>
-    <button class="tri-btn" id="btn-skata" onclick="setStrokeType(&#39;k&#39;)">片假名</button>
+    <button class="tri-btn active" id="btn-shira" onclick="setStrokeType('h')">平假名</button>
+    <button class="tri-btn" id="btn-skata" onclick="setStrokeType('k')">片假名</button>
   </div>
-  <div id="stroke-list" style="display: block;">
+  <div id="stroke-list">
     <div style="font-size:12px;color:#888;margin-bottom:6px">點擊假名查看書寫說明</div>
-    <div class="stroke-grid" id="stroke-grid"><div class="stroke-card" onclick="openStroke(0)"><div class="sk-char">あ</div><div class="sk-roma">a</div></div><div class="stroke-card" onclick="openStroke(1)"><div class="sk-char">い</div><div class="sk-roma">i</div></div><div class="stroke-card" onclick="openStroke(2)"><div class="sk-char">う</div><div class="sk-roma">u</div></div><div class="stroke-card" onclick="openStroke(3)"><div class="sk-char">え</div><div class="sk-roma">e</div></div><div class="stroke-card" onclick="openStroke(4)"><div class="sk-char">お</div><div class="sk-roma">o</div></div><div class="stroke-card" onclick="openStroke(5)"><div class="sk-char">か</div><div class="sk-roma">ka</div></div><div class="stroke-card" onclick="openStroke(6)"><div class="sk-char">き</div><div class="sk-roma">ki</div></div><div class="stroke-card" onclick="openStroke(7)"><div class="sk-char">く</div><div class="sk-roma">ku</div></div><div class="stroke-card" onclick="openStroke(8)"><div class="sk-char">け</div><div class="sk-roma">ke</div></div><div class="stroke-card" onclick="openStroke(9)"><div class="sk-char">こ</div><div class="sk-roma">ko</div></div><div class="stroke-card" onclick="openStroke(10)"><div class="sk-char">さ</div><div class="sk-roma">sa</div></div><div class="stroke-card" onclick="openStroke(11)"><div class="sk-char">し</div><div class="sk-roma">shi</div></div><div class="stroke-card" onclick="openStroke(12)"><div class="sk-char">す</div><div class="sk-roma">su</div></div><div class="stroke-card" onclick="openStroke(13)"><div class="sk-char">せ</div><div class="sk-roma">se</div></div><div class="stroke-card" onclick="openStroke(14)"><div class="sk-char">そ</div><div class="sk-roma">so</div></div><div class="stroke-card" onclick="openStroke(15)"><div class="sk-char">た</div><div class="sk-roma">ta</div></div><div class="stroke-card" onclick="openStroke(16)"><div class="sk-char">ち</div><div class="sk-roma">chi</div></div><div class="stroke-card" onclick="openStroke(17)"><div class="sk-char">つ</div><div class="sk-roma">tsu</div></div><div class="stroke-card" onclick="openStroke(18)"><div class="sk-char">て</div><div class="sk-roma">te</div></div><div class="stroke-card" onclick="openStroke(19)"><div class="sk-char">と</div><div class="sk-roma">to</div></div><div class="stroke-card" onclick="openStroke(20)"><div class="sk-char">な</div><div class="sk-roma">na</div></div><div class="stroke-card" onclick="openStroke(21)"><div class="sk-char">に</div><div class="sk-roma">ni</div></div><div class="stroke-card" onclick="openStroke(22)"><div class="sk-char">ぬ</div><div class="sk-roma">nu</div></div><div class="stroke-card" onclick="openStroke(23)"><div class="sk-char">ね</div><div class="sk-roma">ne</div></div><div class="stroke-card" onclick="openStroke(24)"><div class="sk-char">の</div><div class="sk-roma">no</div></div><div class="stroke-card" onclick="openStroke(25)"><div class="sk-char">は</div><div class="sk-roma">ha</div></div><div class="stroke-card" onclick="openStroke(26)"><div class="sk-char">ひ</div><div class="sk-roma">hi</div></div><div class="stroke-card" onclick="openStroke(27)"><div class="sk-char">ふ</div><div class="sk-roma">fu</div></div><div class="stroke-card" onclick="openStroke(28)"><div class="sk-char">へ</div><div class="sk-roma">he</div></div><div class="stroke-card" onclick="openStroke(29)"><div class="sk-char">ほ</div><div class="sk-roma">ho</div></div><div class="stroke-card" onclick="openStroke(30)"><div class="sk-char">ま</div><div class="sk-roma">ma</div></div><div class="stroke-card" onclick="openStroke(31)"><div class="sk-char">み</div><div class="sk-roma">mi</div></div><div class="stroke-card" onclick="openStroke(32)"><div class="sk-char">む</div><div class="sk-roma">mu</div></div><div class="stroke-card" onclick="openStroke(33)"><div class="sk-char">め</div><div class="sk-roma">me</div></div><div class="stroke-card" onclick="openStroke(34)"><div class="sk-char">も</div><div class="sk-roma">mo</div></div><div class="stroke-card" onclick="openStroke(35)"><div class="sk-char">や</div><div class="sk-roma">ya</div></div><div class="stroke-card" onclick="openStroke(36)"><div class="sk-char">ゆ</div><div class="sk-roma">yu</div></div><div class="stroke-card" onclick="openStroke(37)"><div class="sk-char">よ</div><div class="sk-roma">yo</div></div><div class="stroke-card" onclick="openStroke(38)"><div class="sk-char">ら</div><div class="sk-roma">ra</div></div><div class="stroke-card" onclick="openStroke(39)"><div class="sk-char">り</div><div class="sk-roma">ri</div></div><div class="stroke-card" onclick="openStroke(40)"><div class="sk-char">る</div><div class="sk-roma">ru</div></div><div class="stroke-card" onclick="openStroke(41)"><div class="sk-char">れ</div><div class="sk-roma">re</div></div><div class="stroke-card" onclick="openStroke(42)"><div class="sk-char">ろ</div><div class="sk-roma">ro</div></div><div class="stroke-card" onclick="openStroke(43)"><div class="sk-char">わ</div><div class="sk-roma">wa</div></div><div class="stroke-card" onclick="openStroke(44)"><div class="sk-char">を</div><div class="sk-roma">wo</div></div><div class="stroke-card" onclick="openStroke(45)"><div class="sk-char">ん</div><div class="sk-roma">n</div></div></div>
+    <div class="stroke-grid" id="stroke-grid"></div>
   </div>
   <div id="stroke-detail" style="display:none">
     <button class="back-btn" onclick="backToGrid()">← 返回列表</button>
@@ -211,17 +227,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 <div class="panel" id="tab-quiz">
   <div id="quiz-setup">
     <div class="tri-toggle">
-      <button class="tri-btn active" id="qb-h" onclick="setQType(&#39;h&#39;)">平假名<br>ひらがな</button>
-      <button class="tri-btn" id="qb-k" onclick="setQType(&#39;k&#39;)">片假名<br>カタカナ</button>
-      <button class="tri-btn" id="qb-m" onclick="setQType(&#39;m&#39;)">混合<br>ひ＋カ</button>
+      <button class="tri-btn active" id="qb-h" onclick="setQType('h')">平假名<br>ひらがな</button>
+      <button class="tri-btn" id="qb-k" onclick="setQType('k')">片假名<br>カタカナ</button>
+      <button class="tri-btn" id="qb-m" onclick="setQType('m')">混合<br>ひ＋カ</button>
     </div>
     <div style="font-size:12px;color:#888;margin-bottom:8px">選擇要測驗的行</div>
-    <div id="q-hira-rows" style="display: block;">
-      <div class="section-label" id="q-hira-label" style="display: none;">平假名</div>
-      <div class="row-grid" id="q-hira-btns"><button class="row-btn sel-h" onclick="toggleQH(0)">あ行</button><button class="row-btn sel-h" onclick="toggleQH(1)">か行</button><button class="row-btn sel-h" onclick="toggleQH(2)">さ行</button><button class="row-btn sel-h" onclick="toggleQH(3)">た行</button><button class="row-btn sel-h" onclick="toggleQH(4)">な行</button><button class="row-btn sel-h" onclick="toggleQH(5)">は行</button><button class="row-btn sel-h" onclick="toggleQH(6)">ま行</button><button class="row-btn sel-h" onclick="toggleQH(7)">や行</button><button class="row-btn sel-h" onclick="toggleQH(8)">ら行</button><button class="row-btn sel-h" onclick="toggleQH(9)">わ行</button><button class="row-btn sel-h" onclick="toggleQH(10)">ん</button></div>
+    <div id="q-hira-rows">
+      <div class="section-label" id="q-hira-label">平假名</div>
+      <div class="row-grid" id="q-hira-btns"></div>
     </div>
     <div id="q-kata-rows" style="display:none">
-      <div class="section-label" id="q-kata-label" style="display: none;">片假名</div>
+      <div class="section-label" id="q-kata-label">片假名</div>
       <div class="row-grid" id="q-kata-btns"></div>
     </div>
     <div class="ctrl-row">
@@ -229,17 +245,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
       <button class="ctrl-btn" onclick="qSelNone()">清除</button>
     </div>
     <div class="sel-summary">
-      <span style="font-size:13px;color:#555">已選 <strong id="q-sel-count">46</strong> 個假名</span>
+      <span style="font-size:13px;color:#555">已選 <strong id="q-sel-count">0</strong> 個假名</span>
       <span style="font-size:12px;color:#aaa">至少需要 4 個</span>
     </div>
     <div style="font-size:12px;color:#888;margin-bottom:8px">測驗模式</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
-      <button class="mode-card active" id="qmode-read" onclick="setQMode(&#39;read&#39;)">
+      <button class="mode-card active" id="qmode-read" onclick="setQMode('read')">
         <div class="mc-icon">👁️</div>
         <div class="mc-title">讀字測驗</div>
         <div class="mc-sub">看假名 → 選羅馬音</div>
       </button>
-      <button class="mode-card" id="qmode-listen" onclick="setQMode(&#39;listen&#39;)">
+      <button class="mode-card" id="qmode-listen" onclick="setQMode('listen')">
         <div class="mc-icon">🔊</div>
         <div class="mc-title">聽音測驗</div>
         <div class="mc-sub">聽聲音 → 選日文假名</div>
@@ -282,1016 +298,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 <!-- ══════════ 單字字卡 ══════════ -->
 <div class="panel" id="tab-words">
   <div id="words-list">
-    <div class="cat-scroll"><div class="cat-row" id="cat-row"><button class="cat-btn active" onclick="setCat(&#39;全部&#39;)">全部</button><button class="cat-btn " onclick="setCat(&#39;動物&#39;)">動物</button><button class="cat-btn " onclick="setCat(&#39;食物&#39;)">食物</button><button class="cat-btn " onclick="setCat(&#39;自然&#39;)">自然</button><button class="cat-btn " onclick="setCat(&#39;動詞&#39;)">動詞</button><button class="cat-btn " onclick="setCat(&#39;形容詞&#39;)">形容詞</button><button class="cat-btn " onclick="setCat(&#39;時間&#39;)">時間</button><button class="cat-btn " onclick="setCat(&#39;數字&#39;)">數字</button><button class="cat-btn " onclick="setCat(&#39;日常&#39;)">日常</button><button class="cat-btn " onclick="setCat(&#39;地點&#39;)">地點</button><button class="cat-btn " onclick="setCat(&#39;家庭&#39;)">家庭</button><button class="cat-btn " onclick="setCat(&#39;身體&#39;)">身體</button><button class="cat-btn " onclick="setCat(&#39;顏色&#39;)">顏色</button></div></div>
-    <div class="word-grid" id="word-grid"><div class="word-card" onclick="openWord(0)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">犬</div>
-      <div class="w-kana">いぬ</div>
-      <div class="w-tw">狗</div>
-      <div class="w-roma">inu</div>
-    </div><div class="word-card" onclick="openWord(1)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">猫</div>
-      <div class="w-kana">ねこ</div>
-      <div class="w-tw">貓</div>
-      <div class="w-roma">neko</div>
-    </div><div class="word-card" onclick="openWord(2)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">魚</div>
-      <div class="w-kana">さかな</div>
-      <div class="w-tw">魚</div>
-      <div class="w-roma">sakana</div>
-    </div><div class="word-card" onclick="openWord(3)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">鳥</div>
-      <div class="w-kana">とり</div>
-      <div class="w-tw">鳥</div>
-      <div class="w-roma">tori</div>
-    </div><div class="word-card" onclick="openWord(4)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">馬</div>
-      <div class="w-kana">うま</div>
-      <div class="w-tw">馬</div>
-      <div class="w-roma">uma</div>
-    </div><div class="word-card" onclick="openWord(5)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">牛</div>
-      <div class="w-kana">うし</div>
-      <div class="w-tw">牛</div>
-      <div class="w-roma">ushi</div>
-    </div><div class="word-card" onclick="openWord(6)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">豚</div>
-      <div class="w-kana">ぶた</div>
-      <div class="w-tw">豬</div>
-      <div class="w-roma">buta</div>
-    </div><div class="word-card" onclick="openWord(7)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">兎</div>
-      <div class="w-kana">うさぎ</div>
-      <div class="w-tw">兔子</div>
-      <div class="w-roma">usagi</div>
-    </div><div class="word-card" onclick="openWord(8)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">熊</div>
-      <div class="w-kana">くま</div>
-      <div class="w-tw">熊</div>
-      <div class="w-roma">kuma</div>
-    </div><div class="word-card" onclick="openWord(9)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">猿</div>
-      <div class="w-kana">さる</div>
-      <div class="w-tw">猴子</div>
-      <div class="w-roma">saru</div>
-    </div><div class="word-card" onclick="openWord(10)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">象</div>
-      <div class="w-kana">ぞう</div>
-      <div class="w-tw">大象</div>
-      <div class="w-roma">zou</div>
-    </div><div class="word-card" onclick="openWord(11)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">虎</div>
-      <div class="w-kana">とら</div>
-      <div class="w-tw">老虎</div>
-      <div class="w-roma">tora</div>
-    </div><div class="word-card" onclick="openWord(12)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">狐</div>
-      <div class="w-kana">きつね</div>
-      <div class="w-tw">狐狸</div>
-      <div class="w-roma">kitsune</div>
-    </div><div class="word-card" onclick="openWord(13)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">狼</div>
-      <div class="w-kana">おおかみ</div>
-      <div class="w-tw">狼</div>
-      <div class="w-roma">ookami</div>
-    </div><div class="word-card" onclick="openWord(14)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">蛇</div>
-      <div class="w-kana">へび</div>
-      <div class="w-tw">蛇</div>
-      <div class="w-roma">hebi</div>
-    </div><div class="word-card" onclick="openWord(15)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">ご飯</div>
-      <div class="w-kana">ごはん</div>
-      <div class="w-tw">飯</div>
-      <div class="w-roma">gohan</div>
-    </div><div class="word-card" onclick="openWord(16)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">パン</div>
-      <div class="w-kana">ぱん</div>
-      <div class="w-tw">麵包</div>
-      <div class="w-roma">pan</div>
-    </div><div class="word-card" onclick="openWord(17)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">肉</div>
-      <div class="w-kana">にく</div>
-      <div class="w-tw">肉</div>
-      <div class="w-roma">niku</div>
-    </div><div class="word-card" onclick="openWord(18)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">野菜</div>
-      <div class="w-kana">やさい</div>
-      <div class="w-tw">蔬菜</div>
-      <div class="w-roma">yasai</div>
-    </div><div class="word-card" onclick="openWord(19)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">果物</div>
-      <div class="w-kana">くだもの</div>
-      <div class="w-tw">水果</div>
-      <div class="w-roma">kudamono</div>
-    </div><div class="word-card" onclick="openWord(20)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">魚</div>
-      <div class="w-kana">さかな</div>
-      <div class="w-tw">魚（食材）</div>
-      <div class="w-roma">sakana</div>
-    </div><div class="word-card" onclick="openWord(21)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">卵</div>
-      <div class="w-kana">たまご</div>
-      <div class="w-tw">雞蛋</div>
-      <div class="w-roma">tamago</div>
-    </div><div class="word-card" onclick="openWord(22)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">牛乳</div>
-      <div class="w-kana">ぎゅうにゅう</div>
-      <div class="w-tw">牛奶</div>
-      <div class="w-roma">gyuunyuu</div>
-    </div><div class="word-card" onclick="openWord(23)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">お茶</div>
-      <div class="w-kana">おちゃ</div>
-      <div class="w-tw">茶</div>
-      <div class="w-roma">ocha</div>
-    </div><div class="word-card" onclick="openWord(24)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">コーヒー</div>
-      <div class="w-kana">こーひー</div>
-      <div class="w-tw">咖啡</div>
-      <div class="w-roma">koohii</div>
-    </div><div class="word-card" onclick="openWord(25)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">寿司</div>
-      <div class="w-kana">すし</div>
-      <div class="w-tw">壽司</div>
-      <div class="w-roma">sushi</div>
-    </div><div class="word-card" onclick="openWord(26)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">ラーメン</div>
-      <div class="w-kana">らーめん</div>
-      <div class="w-tw">拉麵</div>
-      <div class="w-roma">raamen</div>
-    </div><div class="word-card" onclick="openWord(27)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">餃子</div>
-      <div class="w-kana">ぎょうざ</div>
-      <div class="w-tw">餃子</div>
-      <div class="w-roma">gyouza</div>
-    </div><div class="word-card" onclick="openWord(28)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">塩</div>
-      <div class="w-kana">しお</div>
-      <div class="w-tw">鹽</div>
-      <div class="w-roma">shio</div>
-    </div><div class="word-card" onclick="openWord(29)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">砂糖</div>
-      <div class="w-kana">さとう</div>
-      <div class="w-tw">砂糖</div>
-      <div class="w-roma">satou</div>
-    </div><div class="word-card" onclick="openWord(30)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">水</div>
-      <div class="w-kana">みず</div>
-      <div class="w-tw">水</div>
-      <div class="w-roma">mizu</div>
-    </div><div class="word-card" onclick="openWord(31)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">花</div>
-      <div class="w-kana">はな</div>
-      <div class="w-tw">花</div>
-      <div class="w-roma">hana</div>
-    </div><div class="word-card" onclick="openWord(32)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">木</div>
-      <div class="w-kana">き</div>
-      <div class="w-tw">樹木</div>
-      <div class="w-roma">ki</div>
-    </div><div class="word-card" onclick="openWord(33)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">山</div>
-      <div class="w-kana">やま</div>
-      <div class="w-tw">山</div>
-      <div class="w-roma">yama</div>
-    </div><div class="word-card" onclick="openWord(34)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">海</div>
-      <div class="w-kana">うみ</div>
-      <div class="w-tw">海</div>
-      <div class="w-roma">umi</div>
-    </div><div class="word-card" onclick="openWord(35)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">空</div>
-      <div class="w-kana">そら</div>
-      <div class="w-tw">天空</div>
-      <div class="w-roma">sora</div>
-    </div><div class="word-card" onclick="openWord(36)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">川</div>
-      <div class="w-kana">かわ</div>
-      <div class="w-tw">河川</div>
-      <div class="w-roma">kawa</div>
-    </div><div class="word-card" onclick="openWord(37)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">湖</div>
-      <div class="w-kana">みずうみ</div>
-      <div class="w-tw">湖</div>
-      <div class="w-roma">mizuumi</div>
-    </div><div class="word-card" onclick="openWord(38)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">森</div>
-      <div class="w-kana">もり</div>
-      <div class="w-tw">森林</div>
-      <div class="w-roma">mori</div>
-    </div><div class="word-card" onclick="openWord(39)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">草</div>
-      <div class="w-kana">くさ</div>
-      <div class="w-tw">草</div>
-      <div class="w-roma">kusa</div>
-    </div><div class="word-card" onclick="openWord(40)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">石</div>
-      <div class="w-kana">いし</div>
-      <div class="w-tw">石頭</div>
-      <div class="w-roma">ishi</div>
-    </div><div class="word-card" onclick="openWord(41)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">雨</div>
-      <div class="w-kana">あめ</div>
-      <div class="w-tw">雨</div>
-      <div class="w-roma">ame</div>
-    </div><div class="word-card" onclick="openWord(42)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">雪</div>
-      <div class="w-kana">ゆき</div>
-      <div class="w-tw">雪</div>
-      <div class="w-roma">yuki</div>
-    </div><div class="word-card" onclick="openWord(43)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">風</div>
-      <div class="w-kana">かぜ</div>
-      <div class="w-tw">風</div>
-      <div class="w-roma">kaze</div>
-    </div><div class="word-card" onclick="openWord(44)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">太陽</div>
-      <div class="w-kana">たいよう</div>
-      <div class="w-tw">太陽</div>
-      <div class="w-roma">taiyou</div>
-    </div><div class="word-card" onclick="openWord(45)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">月</div>
-      <div class="w-kana">つき</div>
-      <div class="w-tw">月亮</div>
-      <div class="w-roma">tsuki</div>
-    </div><div class="word-card" onclick="openWord(46)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">食べる</div>
-      <div class="w-kana">たべる</div>
-      <div class="w-tw">吃</div>
-      <div class="w-roma">taberu</div>
-    </div><div class="word-card" onclick="openWord(47)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">飲む</div>
-      <div class="w-kana">のむ</div>
-      <div class="w-tw">喝</div>
-      <div class="w-roma">nomu</div>
-    </div><div class="word-card" onclick="openWord(48)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">見る</div>
-      <div class="w-kana">みる</div>
-      <div class="w-tw">看</div>
-      <div class="w-roma">miru</div>
-    </div><div class="word-card" onclick="openWord(49)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">聞く</div>
-      <div class="w-kana">きく</div>
-      <div class="w-tw">聽</div>
-      <div class="w-roma">kiku</div>
-    </div><div class="word-card" onclick="openWord(50)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">行く</div>
-      <div class="w-kana">いく</div>
-      <div class="w-tw">去</div>
-      <div class="w-roma">iku</div>
-    </div><div class="word-card" onclick="openWord(51)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">来る</div>
-      <div class="w-kana">くる</div>
-      <div class="w-tw">來</div>
-      <div class="w-roma">kuru</div>
-    </div><div class="word-card" onclick="openWord(52)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">話す</div>
-      <div class="w-kana">はなす</div>
-      <div class="w-tw">說話</div>
-      <div class="w-roma">hanasu</div>
-    </div><div class="word-card" onclick="openWord(53)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">書く</div>
-      <div class="w-kana">かく</div>
-      <div class="w-tw">寫</div>
-      <div class="w-roma">kaku</div>
-    </div><div class="word-card" onclick="openWord(54)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">読む</div>
-      <div class="w-kana">よむ</div>
-      <div class="w-tw">讀</div>
-      <div class="w-roma">yomu</div>
-    </div><div class="word-card" onclick="openWord(55)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">寝る</div>
-      <div class="w-kana">ねる</div>
-      <div class="w-tw">睡覺</div>
-      <div class="w-roma">neru</div>
-    </div><div class="word-card" onclick="openWord(56)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">起きる</div>
-      <div class="w-kana">おきる</div>
-      <div class="w-tw">起床</div>
-      <div class="w-roma">okiru</div>
-    </div><div class="word-card" onclick="openWord(57)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">歩く</div>
-      <div class="w-kana">あるく</div>
-      <div class="w-tw">走路</div>
-      <div class="w-roma">aruku</div>
-    </div><div class="word-card" onclick="openWord(58)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">走る</div>
-      <div class="w-kana">はしる</div>
-      <div class="w-tw">跑步</div>
-      <div class="w-roma">hashiru</div>
-    </div><div class="word-card" onclick="openWord(59)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">買う</div>
-      <div class="w-kana">かう</div>
-      <div class="w-tw">買</div>
-      <div class="w-roma">kau</div>
-    </div><div class="word-card" onclick="openWord(60)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">売る</div>
-      <div class="w-kana">うる</div>
-      <div class="w-tw">賣</div>
-      <div class="w-roma">uru</div>
-    </div><div class="word-card" onclick="openWord(61)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">使う</div>
-      <div class="w-kana">つかう</div>
-      <div class="w-tw">使用</div>
-      <div class="w-roma">tsukau</div>
-    </div><div class="word-card" onclick="openWord(62)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">作る</div>
-      <div class="w-kana">つくる</div>
-      <div class="w-tw">製作</div>
-      <div class="w-roma">tsukuru</div>
-    </div><div class="word-card" onclick="openWord(63)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">遊ぶ</div>
-      <div class="w-kana">あそぶ</div>
-      <div class="w-tw">玩</div>
-      <div class="w-roma">asobu</div>
-    </div><div class="word-card" onclick="openWord(64)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">勉強する</div>
-      <div class="w-kana">べんきょうする</div>
-      <div class="w-tw">讀書、學習</div>
-      <div class="w-roma">benkyou suru</div>
-    </div><div class="word-card" onclick="openWord(65)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">働く</div>
-      <div class="w-kana">はたらく</div>
-      <div class="w-tw">工作</div>
-      <div class="w-roma">hataraku</div>
-    </div><div class="word-card" onclick="openWord(66)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">大きい</div>
-      <div class="w-kana">おおきい</div>
-      <div class="w-tw">大的</div>
-      <div class="w-roma">ookii</div>
-    </div><div class="word-card" onclick="openWord(67)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">小さい</div>
-      <div class="w-kana">ちいさい</div>
-      <div class="w-tw">小的</div>
-      <div class="w-roma">chiisai</div>
-    </div><div class="word-card" onclick="openWord(68)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">いい</div>
-      <div class="w-kana">いい</div>
-      <div class="w-tw">好的</div>
-      <div class="w-roma">ii</div>
-    </div><div class="word-card" onclick="openWord(69)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">悪い</div>
-      <div class="w-kana">わるい</div>
-      <div class="w-tw">壞的</div>
-      <div class="w-roma">warui</div>
-    </div><div class="word-card" onclick="openWord(70)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">新しい</div>
-      <div class="w-kana">あたらしい</div>
-      <div class="w-tw">新的</div>
-      <div class="w-roma">atarashii</div>
-    </div><div class="word-card" onclick="openWord(71)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">古い</div>
-      <div class="w-kana">ふるい</div>
-      <div class="w-tw">舊的</div>
-      <div class="w-roma">furui</div>
-    </div><div class="word-card" onclick="openWord(72)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">高い</div>
-      <div class="w-kana">たかい</div>
-      <div class="w-tw">高的、貴的</div>
-      <div class="w-roma">takai</div>
-    </div><div class="word-card" onclick="openWord(73)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">安い</div>
-      <div class="w-kana">やすい</div>
-      <div class="w-tw">便宜的</div>
-      <div class="w-roma">yasui</div>
-    </div><div class="word-card" onclick="openWord(74)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">多い</div>
-      <div class="w-kana">おおい</div>
-      <div class="w-tw">多的</div>
-      <div class="w-roma">ooi</div>
-    </div><div class="word-card" onclick="openWord(75)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">少ない</div>
-      <div class="w-kana">すくない</div>
-      <div class="w-tw">少的</div>
-      <div class="w-roma">sukunai</div>
-    </div><div class="word-card" onclick="openWord(76)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">暑い</div>
-      <div class="w-kana">あつい</div>
-      <div class="w-tw">熱的</div>
-      <div class="w-roma">atsui</div>
-    </div><div class="word-card" onclick="openWord(77)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">寒い</div>
-      <div class="w-kana">さむい</div>
-      <div class="w-tw">冷的</div>
-      <div class="w-roma">samui</div>
-    </div><div class="word-card" onclick="openWord(78)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">面白い</div>
-      <div class="w-kana">おもしろい</div>
-      <div class="w-tw">有趣的</div>
-      <div class="w-roma">omoshiroi</div>
-    </div><div class="word-card" onclick="openWord(79)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">難しい</div>
-      <div class="w-kana">むずかしい</div>
-      <div class="w-tw">難的</div>
-      <div class="w-roma">muzukashii</div>
-    </div><div class="word-card" onclick="openWord(80)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">優しい</div>
-      <div class="w-kana">やさしい</div>
-      <div class="w-tw">溫柔的</div>
-      <div class="w-roma">yasashii</div>
-    </div><div class="word-card" onclick="openWord(81)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">今日</div>
-      <div class="w-kana">きょう</div>
-      <div class="w-tw">今天</div>
-      <div class="w-roma">kyou</div>
-    </div><div class="word-card" onclick="openWord(82)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">明日</div>
-      <div class="w-kana">あした</div>
-      <div class="w-tw">明天</div>
-      <div class="w-roma">ashita</div>
-    </div><div class="word-card" onclick="openWord(83)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">昨日</div>
-      <div class="w-kana">きのう</div>
-      <div class="w-tw">昨天</div>
-      <div class="w-roma">kinou</div>
-    </div><div class="word-card" onclick="openWord(84)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">朝</div>
-      <div class="w-kana">あさ</div>
-      <div class="w-tw">早上</div>
-      <div class="w-roma">asa</div>
-    </div><div class="word-card" onclick="openWord(85)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">昼</div>
-      <div class="w-kana">ひる</div>
-      <div class="w-tw">中午</div>
-      <div class="w-roma">hiru</div>
-    </div><div class="word-card" onclick="openWord(86)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">夜</div>
-      <div class="w-kana">よる</div>
-      <div class="w-tw">晚上</div>
-      <div class="w-roma">yoru</div>
-    </div><div class="word-card" onclick="openWord(87)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">今</div>
-      <div class="w-kana">いま</div>
-      <div class="w-tw">現在</div>
-      <div class="w-roma">ima</div>
-    </div><div class="word-card" onclick="openWord(88)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">午前</div>
-      <div class="w-kana">ごぜん</div>
-      <div class="w-tw">上午</div>
-      <div class="w-roma">gozen</div>
-    </div><div class="word-card" onclick="openWord(89)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">午後</div>
-      <div class="w-kana">ごご</div>
-      <div class="w-tw">下午</div>
-      <div class="w-roma">gogo</div>
-    </div><div class="word-card" onclick="openWord(90)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">毎日</div>
-      <div class="w-kana">まいにち</div>
-      <div class="w-tw">每天</div>
-      <div class="w-roma">mainichi</div>
-    </div><div class="word-card" onclick="openWord(91)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">今週</div>
-      <div class="w-kana">こんしゅう</div>
-      <div class="w-tw">本週</div>
-      <div class="w-roma">konshuu</div>
-    </div><div class="word-card" onclick="openWord(92)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">来週</div>
-      <div class="w-kana">らいしゅう</div>
-      <div class="w-tw">下週</div>
-      <div class="w-roma">raishuu</div>
-    </div><div class="word-card" onclick="openWord(93)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">今月</div>
-      <div class="w-kana">こんげつ</div>
-      <div class="w-tw">本月</div>
-      <div class="w-roma">kongetsu</div>
-    </div><div class="word-card" onclick="openWord(94)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">来年</div>
-      <div class="w-kana">らいねん</div>
-      <div class="w-tw">明年</div>
-      <div class="w-roma">rainen</div>
-    </div><div class="word-card" onclick="openWord(95)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">時間</div>
-      <div class="w-kana">じかん</div>
-      <div class="w-tw">時間</div>
-      <div class="w-roma">jikan</div>
-    </div><div class="word-card" onclick="openWord(96)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">一</div>
-      <div class="w-kana">いち</div>
-      <div class="w-tw">一</div>
-      <div class="w-roma">ichi</div>
-    </div><div class="word-card" onclick="openWord(97)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">二</div>
-      <div class="w-kana">に</div>
-      <div class="w-tw">二</div>
-      <div class="w-roma">ni</div>
-    </div><div class="word-card" onclick="openWord(98)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">三</div>
-      <div class="w-kana">さん</div>
-      <div class="w-tw">三</div>
-      <div class="w-roma">san</div>
-    </div><div class="word-card" onclick="openWord(99)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">四</div>
-      <div class="w-kana">し・よん</div>
-      <div class="w-tw">四</div>
-      <div class="w-roma">shi/yon</div>
-    </div><div class="word-card" onclick="openWord(100)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">五</div>
-      <div class="w-kana">ご</div>
-      <div class="w-tw">五</div>
-      <div class="w-roma">go</div>
-    </div><div class="word-card" onclick="openWord(101)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">六</div>
-      <div class="w-kana">ろく</div>
-      <div class="w-tw">六</div>
-      <div class="w-roma">roku</div>
-    </div><div class="word-card" onclick="openWord(102)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">七</div>
-      <div class="w-kana">しち・なな</div>
-      <div class="w-tw">七</div>
-      <div class="w-roma">shichi/nana</div>
-    </div><div class="word-card" onclick="openWord(103)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">八</div>
-      <div class="w-kana">はち</div>
-      <div class="w-tw">八</div>
-      <div class="w-roma">hachi</div>
-    </div><div class="word-card" onclick="openWord(104)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">九</div>
-      <div class="w-kana">く・きゅう</div>
-      <div class="w-tw">九</div>
-      <div class="w-roma">ku/kyuu</div>
-    </div><div class="word-card" onclick="openWord(105)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">十</div>
-      <div class="w-kana">じゅう</div>
-      <div class="w-tw">十</div>
-      <div class="w-roma">juu</div>
-    </div><div class="word-card" onclick="openWord(106)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">百</div>
-      <div class="w-kana">ひゃく</div>
-      <div class="w-tw">百</div>
-      <div class="w-roma">hyaku</div>
-    </div><div class="word-card" onclick="openWord(107)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">千</div>
-      <div class="w-kana">せん</div>
-      <div class="w-tw">千</div>
-      <div class="w-roma">sen</div>
-    </div><div class="word-card" onclick="openWord(108)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">万</div>
-      <div class="w-kana">まん</div>
-      <div class="w-tw">萬</div>
-      <div class="w-roma">man</div>
-    </div><div class="word-card" onclick="openWord(109)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">零</div>
-      <div class="w-kana">れい・ぜろ</div>
-      <div class="w-tw">零</div>
-      <div class="w-roma">rei/zero</div>
-    </div><div class="word-card" onclick="openWord(110)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">半</div>
-      <div class="w-kana">はん</div>
-      <div class="w-tw">半</div>
-      <div class="w-roma">han</div>
-    </div><div class="word-card" onclick="openWord(111)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">ありがとう</div>
-      <div class="w-kana">ありがとう</div>
-      <div class="w-tw">謝謝</div>
-      <div class="w-roma">arigatou</div>
-    </div><div class="word-card" onclick="openWord(112)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">すみません</div>
-      <div class="w-kana">すみません</div>
-      <div class="w-tw">不好意思</div>
-      <div class="w-roma">sumimasen</div>
-    </div><div class="word-card" onclick="openWord(113)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">おはよう</div>
-      <div class="w-kana">おはよう</div>
-      <div class="w-tw">早安</div>
-      <div class="w-roma">ohayou</div>
-    </div><div class="word-card" onclick="openWord(114)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">こんにちは</div>
-      <div class="w-kana">こんにちは</div>
-      <div class="w-tw">你好</div>
-      <div class="w-roma">konnichiwa</div>
-    </div><div class="word-card" onclick="openWord(115)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">こんばんは</div>
-      <div class="w-kana">こんばんは</div>
-      <div class="w-tw">晚安（問候）</div>
-      <div class="w-roma">konbanwa</div>
-    </div><div class="word-card" onclick="openWord(116)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">さようなら</div>
-      <div class="w-kana">さようなら</div>
-      <div class="w-tw">再見</div>
-      <div class="w-roma">sayounara</div>
-    </div><div class="word-card" onclick="openWord(117)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">はい</div>
-      <div class="w-kana">はい</div>
-      <div class="w-tw">是、好</div>
-      <div class="w-roma">hai</div>
-    </div><div class="word-card" onclick="openWord(118)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">いいえ</div>
-      <div class="w-kana">いいえ</div>
-      <div class="w-tw">不是、不</div>
-      <div class="w-roma">iie</div>
-    </div><div class="word-card" onclick="openWord(119)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">お願い</div>
-      <div class="w-kana">おねがい</div>
-      <div class="w-tw">拜託</div>
-      <div class="w-roma">onegai</div>
-    </div><div class="word-card" onclick="openWord(120)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">ごめん</div>
-      <div class="w-kana">ごめん</div>
-      <div class="w-tw">對不起</div>
-      <div class="w-roma">gomen</div>
-    </div><div class="word-card" onclick="openWord(121)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">どうぞ</div>
-      <div class="w-kana">どうぞ</div>
-      <div class="w-tw">請（給予）</div>
-      <div class="w-roma">douzo</div>
-    </div><div class="word-card" onclick="openWord(122)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">大丈夫</div>
-      <div class="w-kana">だいじょうぶ</div>
-      <div class="w-tw">沒關係、沒問題</div>
-      <div class="w-roma">daijoubu</div>
-    </div><div class="word-card" onclick="openWord(123)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">わかる</div>
-      <div class="w-kana">わかる</div>
-      <div class="w-tw">明白</div>
-      <div class="w-roma">wakaru</div>
-    </div><div class="word-card" onclick="openWord(124)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">知る</div>
-      <div class="w-kana">しる</div>
-      <div class="w-tw">知道</div>
-      <div class="w-roma">shiru</div>
-    </div><div class="word-card" onclick="openWord(125)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">いただきます</div>
-      <div class="w-kana">いただきます</div>
-      <div class="w-tw">開動了</div>
-      <div class="w-roma">itadakimasu</div>
-    </div><div class="word-card" onclick="openWord(126)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">学校</div>
-      <div class="w-kana">がっこう</div>
-      <div class="w-tw">學校</div>
-      <div class="w-roma">gakkou</div>
-    </div><div class="word-card" onclick="openWord(127)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">駅</div>
-      <div class="w-kana">えき</div>
-      <div class="w-tw">車站</div>
-      <div class="w-roma">eki</div>
-    </div><div class="word-card" onclick="openWord(128)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">病院</div>
-      <div class="w-kana">びょういん</div>
-      <div class="w-tw">醫院</div>
-      <div class="w-roma">byouin</div>
-    </div><div class="word-card" onclick="openWord(129)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">銀行</div>
-      <div class="w-kana">ぎんこう</div>
-      <div class="w-tw">銀行</div>
-      <div class="w-roma">ginkou</div>
-    </div><div class="word-card" onclick="openWord(130)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">郵便局</div>
-      <div class="w-kana">ゆうびんきょく</div>
-      <div class="w-tw">郵局</div>
-      <div class="w-roma">yuubinkyoku</div>
-    </div><div class="word-card" onclick="openWord(131)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">スーパー</div>
-      <div class="w-kana">すーぱー</div>
-      <div class="w-tw">超市</div>
-      <div class="w-roma">suupaa</div>
-    </div><div class="word-card" onclick="openWord(132)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">コンビニ</div>
-      <div class="w-kana">こんびに</div>
-      <div class="w-tw">便利商店</div>
-      <div class="w-roma">konbini</div>
-    </div><div class="word-card" onclick="openWord(133)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">レストラン</div>
-      <div class="w-kana">れすとらん</div>
-      <div class="w-tw">餐廳</div>
-      <div class="w-roma">resutoran</div>
-    </div><div class="word-card" onclick="openWord(134)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">図書館</div>
-      <div class="w-kana">としょかん</div>
-      <div class="w-tw">圖書館</div>
-      <div class="w-roma">toshokan</div>
-    </div><div class="word-card" onclick="openWord(135)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">公園</div>
-      <div class="w-kana">こうえん</div>
-      <div class="w-tw">公園</div>
-      <div class="w-roma">kouen</div>
-    </div><div class="word-card" onclick="openWord(136)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">空港</div>
-      <div class="w-kana">くうこう</div>
-      <div class="w-tw">機場</div>
-      <div class="w-roma">kuukou</div>
-    </div><div class="word-card" onclick="openWord(137)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">家</div>
-      <div class="w-kana">いえ</div>
-      <div class="w-tw">家</div>
-      <div class="w-roma">ie</div>
-    </div><div class="word-card" onclick="openWord(138)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">父</div>
-      <div class="w-kana">ちち</div>
-      <div class="w-tw">父親（自家）</div>
-      <div class="w-roma">chichi</div>
-    </div><div class="word-card" onclick="openWord(139)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">母</div>
-      <div class="w-kana">はは</div>
-      <div class="w-tw">母親（自家）</div>
-      <div class="w-roma">haha</div>
-    </div><div class="word-card" onclick="openWord(140)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">兄</div>
-      <div class="w-kana">あに</div>
-      <div class="w-tw">哥哥（自家）</div>
-      <div class="w-roma">ani</div>
-    </div><div class="word-card" onclick="openWord(141)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">姉</div>
-      <div class="w-kana">あね</div>
-      <div class="w-tw">姊姊（自家）</div>
-      <div class="w-roma">ane</div>
-    </div><div class="word-card" onclick="openWord(142)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">弟</div>
-      <div class="w-kana">おとうと</div>
-      <div class="w-tw">弟弟</div>
-      <div class="w-roma">otouto</div>
-    </div><div class="word-card" onclick="openWord(143)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">妹</div>
-      <div class="w-kana">いもうと</div>
-      <div class="w-tw">妹妹</div>
-      <div class="w-roma">imouto</div>
-    </div><div class="word-card" onclick="openWord(144)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">子供</div>
-      <div class="w-kana">こども</div>
-      <div class="w-tw">孩子</div>
-      <div class="w-roma">kodomo</div>
-    </div><div class="word-card" onclick="openWord(145)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">祖父</div>
-      <div class="w-kana">そふ</div>
-      <div class="w-tw">祖父（自家）</div>
-      <div class="w-roma">sofu</div>
-    </div><div class="word-card" onclick="openWord(146)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">祖母</div>
-      <div class="w-kana">そぼ</div>
-      <div class="w-tw">祖母（自家）</div>
-      <div class="w-roma">sobo</div>
-    </div><div class="word-card" onclick="openWord(147)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">家族</div>
-      <div class="w-kana">かぞく</div>
-      <div class="w-tw">家人</div>
-      <div class="w-roma">kazoku</div>
-    </div><div class="word-card" onclick="openWord(148)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">頭</div>
-      <div class="w-kana">あたま</div>
-      <div class="w-tw">頭</div>
-      <div class="w-roma">atama</div>
-    </div><div class="word-card" onclick="openWord(149)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">目</div>
-      <div class="w-kana">め</div>
-      <div class="w-tw">眼睛</div>
-      <div class="w-roma">me</div>
-    </div><div class="word-card" onclick="openWord(150)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">耳</div>
-      <div class="w-kana">みみ</div>
-      <div class="w-tw">耳朵</div>
-      <div class="w-roma">mimi</div>
-    </div><div class="word-card" onclick="openWord(151)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">鼻</div>
-      <div class="w-kana">はな</div>
-      <div class="w-tw">鼻子</div>
-      <div class="w-roma">hana</div>
-    </div><div class="word-card" onclick="openWord(152)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">口</div>
-      <div class="w-kana">くち</div>
-      <div class="w-tw">嘴巴</div>
-      <div class="w-roma">kuchi</div>
-    </div><div class="word-card" onclick="openWord(153)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">手</div>
-      <div class="w-kana">て</div>
-      <div class="w-tw">手</div>
-      <div class="w-roma">te</div>
-    </div><div class="word-card" onclick="openWord(154)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">足</div>
-      <div class="w-kana">あし</div>
-      <div class="w-tw">腳</div>
-      <div class="w-roma">ashi</div>
-    </div><div class="word-card" onclick="openWord(155)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">背中</div>
-      <div class="w-kana">せなか</div>
-      <div class="w-tw">背部</div>
-      <div class="w-roma">senaka</div>
-    </div><div class="word-card" onclick="openWord(156)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">お腹</div>
-      <div class="w-kana">おなか</div>
-      <div class="w-tw">肚子</div>
-      <div class="w-roma">onaka</div>
-    </div><div class="word-card" onclick="openWord(157)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">心</div>
-      <div class="w-kana">こころ</div>
-      <div class="w-tw">心、內心</div>
-      <div class="w-roma">kokoro</div>
-    </div><div class="word-card" onclick="openWord(158)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">赤</div>
-      <div class="w-kana">あか</div>
-      <div class="w-tw">紅色</div>
-      <div class="w-roma">aka</div>
-    </div><div class="word-card" onclick="openWord(159)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">青</div>
-      <div class="w-kana">あお</div>
-      <div class="w-tw">藍色、綠色</div>
-      <div class="w-roma">ao</div>
-    </div><div class="word-card" onclick="openWord(160)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">白</div>
-      <div class="w-kana">しろ</div>
-      <div class="w-tw">白色</div>
-      <div class="w-roma">shiro</div>
-    </div><div class="word-card" onclick="openWord(161)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">黒</div>
-      <div class="w-kana">くろ</div>
-      <div class="w-tw">黑色</div>
-      <div class="w-roma">kuro</div>
-    </div><div class="word-card" onclick="openWord(162)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">黄色</div>
-      <div class="w-kana">きいろ</div>
-      <div class="w-tw">黃色</div>
-      <div class="w-roma">kiiro</div>
-    </div><div class="word-card" onclick="openWord(163)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">緑</div>
-      <div class="w-kana">みどり</div>
-      <div class="w-tw">綠色</div>
-      <div class="w-roma">midori</div>
-    </div><div class="word-card" onclick="openWord(164)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">紫</div>
-      <div class="w-kana">むらさき</div>
-      <div class="w-tw">紫色</div>
-      <div class="w-roma">murasaki</div>
-    </div><div class="word-card" onclick="openWord(165)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">オレンジ</div>
-      <div class="w-kana">おれんじ</div>
-      <div class="w-tw">橘色</div>
-      <div class="w-roma">orenji</div>
-    </div><div class="word-card" onclick="openWord(166)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">ピンク</div>
-      <div class="w-kana">ぴんく</div>
-      <div class="w-tw">粉紅色</div>
-      <div class="w-roma">pinku</div>
-    </div><div class="word-card" onclick="openWord(167)">
-      <div class="w-icon">🔊</div>
-      <div class="w-jp">茶色</div>
-      <div class="w-kana">ちゃいろ</div>
-      <div class="w-tw">咖啡色</div>
-      <div class="w-roma">chairo</div>
-    </div></div>
+    <div class="cat-scroll"><div class="cat-row" id="cat-row"></div></div>
+    <div class="word-grid" id="word-grid"></div>
   </div>
   <div id="words-detail" style="display:none">
     <button class="back-btn" onclick="backToWords()">← 返回字卡</button>
@@ -1554,21 +562,35 @@ const CATS=['全部','動物','食物','自然','動詞','形容詞','時間','�
 /* ═══════════════════════════════
    工具
 ═══════════════════════════════ */
-let showH=true, showK=true;
-let _speakTimer=null;
+let showH=true, showK=true, settingSound=true, settingToast=true;
+let _currentAudio = null;
 function speak(txt, roma){
-  if(!window.speechSynthesis)return;
-  // 清除所有佇列和計時器，避免重複
-  speechSynthesis.cancel();
-  if(_speakTimer){ clearTimeout(_speakTimer); _speakTimer=null; }
-  // 稍微延遲再播，確保 cancel 生效（iOS/Chrome 需要）
-  _speakTimer=setTimeout(()=>{
-    const u=new SpeechSynthesisUtterance(txt);
-    u.lang='ja-JP'; u.rate=0.6; u.pitch=1.0;
-    speechSynthesis.speak(u);
-  }, 80);
   // 顯示發音提示 toast
-  if(roma) showToast(txt, roma);
+  if(roma && settingToast) showToast(txt, roma);
+  if(!settingSound) return;
+
+  // 停止目前播放中的音檔
+  if(_currentAudio){
+    _currentAudio.pause();
+    _currentAudio.currentTime = 0;
+    _currentAudio = null;
+  }
+
+  // 優先用 Google TTS（音質最好）
+  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(txt)}&tl=ja&client=tw-ob&ttsspeed=0.8`;
+  const audio = new Audio(googleUrl);
+  audio.volume = 1.0;
+  _currentAudio = audio;
+
+  audio.play().catch(()=>{
+    // Google TTS 被擋時，fallback 到 Web Speech API
+    _currentAudio = null;
+    if(!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'ja-JP'; u.rate = 0.7; u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  });
 }
 let toastTimer=null;
 function showToast(char, roma){
@@ -1581,9 +603,12 @@ function showToast(char, roma){
   toast.id='speak-toast';
   toast.style.cssText=[
     'position:fixed',
-    'bottom:90px',
-    'left:50%',
-    'transform:translateX(-50%)',
+    'bottom:60px',
+    'left:0',
+    'right:0',
+    'margin:0 auto',
+    'width:fit-content',
+    'max-width:80vw',
     'background:rgba(26,22,70,0.93)',
     'color:#fff',
     'padding:14px 32px',
@@ -1628,17 +653,21 @@ const selected = new Set();
 function toggleFilter(type){
   if(type==='h') showH=!showH;
   else showK=!showK;
-  // 至少保留一種
   if(!showH&&!showK){ if(type==='h')showH=true; else showK=true; }
   document.getElementById('fp-h').className='fpill'+(showH?' on-h':'');
   document.getElementById('fp-k').className='fpill'+(showK?' on-k':'');
   renderAllTables();
 }
+function toggleSetting(type){
+  if(type==='sound') settingSound=!settingSound;
+  else settingToast=!settingToast;
+  const el=document.getElementById('st-'+type);
+  el.classList.toggle('on', type==='sound'?settingSound:settingToast);
+}
 
 function cellKey(sec,ri,ci){return `${sec}:${ri}:${ci}`;}
 
 function toggleCell(sec,ri,ci,char,roma){
-  // 點格子只發音，不改選取狀態（選取由行標題控制）
   speak(char, roma);
 }
 
@@ -1664,9 +693,7 @@ function buildTable(tableId, data, cols, sec){
       style="${allSel?'outline:2px solid #1a1a1a;outline-offset:1px;':''}">${row.row}</div></td>`;
     row.cells.forEach((c,ci)=>{
       if(!c){html+=`<td style="width:60px"><div class="kc-empty"></div></td>`;return;}
-      const k=cellKey(sec,ri,ci);
-      const isSel=selected.has(k);
-      html+=`<td style="width:60px"><div class="kc ${isSel?'selected':''}" onclick="toggleCell('${sec}',${ri},${ci},'${c.h}','${c.r}')"><div class="dual">${showH?`<span class="h">${c.h}</span>`:''} ${showK?`<span class="k">${c.k}</span>`:''}<span class="r">${c.r}</span></div></div></td>`;
+      html+=`<td style="width:60px"><div class="kc" onclick="toggleCell('${sec}',${ri},${ci},'${c.h}','${c.r}')"><div class="dual">${showH?`<span class="h">${c.h}</span>`:''} ${showK?`<span class="k">${c.k}</span>`:''}<span class="r">${c.r}</span></div></div></td>`;
     });
     html+='</tr>';
   });
@@ -1682,7 +709,8 @@ function renderAllTables(){
 
 // 預設全選清音
 function initSelect(){
-  SEI.forEach((row,ri)=>row.cells.forEach((c,ci)=>{if(c)selected.add(cellKey('sei',ri,ci));}));
+  // 預設不選任何格子
+  selected.clear();
   renderAllTables();
 }
 
@@ -1911,6 +939,5 @@ setQType('h');
 renderCats();
 renderWords();
 </script>
-
-
-</body></html>
+</body>
+</html>
