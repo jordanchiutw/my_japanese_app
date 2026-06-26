@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 日文五十音複習 | 最後更新：2026-06-26 15:58 (UTC+8) -->
+<!-- 日文五十音複習 | 最後更新：2026-06-26 16:01 (UTC+8) -->
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -612,17 +612,26 @@ function speak(txt, roma){
   if(!settingSound) return;
   if(!window.speechSynthesis) return;
 
-  // 建立 utterance 先，確保在 user gesture 的 call stack 內
   const u = new SpeechSynthesisUtterance(txt);
   u.lang = 'ja-JP';
   u.rate = _speakRate;
   u.pitch = 1.0;
   u.volume = 1.0;
-  if(_jpVoice) u.voice = _jpVoice;
+  // 只在有可靠語音時才指定，否則讓瀏覽器自己選
+  // 避免指定到不支援的語音導致靜音
+  if(_jpVoice && _jpVoice.lang && _jpVoice.lang.startsWith('ja')) {
+    u.voice = _jpVoice;
+  }
 
-  // cancel 後直接 speak（不用 setTimeout）
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
+
+  // Chrome bug workaround: 超過15秒的語音會停住，這裡用 resume 預防
+  const resumeTimer = setInterval(()=>{
+    if(speechSynthesis.paused) speechSynthesis.resume();
+  }, 5000);
+  u.onend = ()=> clearInterval(resumeTimer);
+  u.onerror = ()=> clearInterval(resumeTimer);
 }
 let toastTimer=null;
 function showToast(char, roma){
@@ -972,5 +981,5 @@ renderCats();
 renderWords();
 </script>
 </body>
-<!-- build: 2026-06-26 15:58 UTC+8 -->
+<!-- build: 2026-06-26 16:01 UTC+8 -->
 </html>
