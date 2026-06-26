@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- 日文五十音複習 | 最後更新：2026-06-26 15:01 (UTC+8) -->
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -59,11 +60,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .fpill.on-k{background:#FFF3E8;border-color:#C45C00;color:#7A3800;}
 .hint{font-size:11px;color:#aaa;margin-bottom:8px;}
 /* settings toggle row */
-.setting-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;}
+.setting-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;align-items:center;}
 .stoggle{display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12px;border:1.5px solid #ddd;border-radius:99px;cursor:pointer;background:#fff;color:#666;user-select:none;}
 .stoggle.on{background:#E8F5E9;border-color:#388E3C;color:#1B5E20;}
 .stoggle-dot{width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0;transition:background 0.15s;}
 .stoggle.on .stoggle-dot{background:#388E3C;}
+/* speed slider */
+.speed-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.speed-lbl{font-size:12px;color:#888;white-space:nowrap;}
+.speed-val{font-size:12px;font-weight:600;color:#26215C;min-width:28px;text-align:right;}
+input[type=range].speed-slider{flex:1;height:4px;accent-color:#534AB7;cursor:pointer;}
 /* toast animation */
 @keyframes toastIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 @keyframes toastOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(10px)} }
@@ -170,6 +176,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
     <div class="stoggle on" id="st-toast" onclick="toggleSetting('toast')">
       <span class="stoggle-dot"></span>💬 顯示提示
     </div>
+  </div>
+  <div class="speed-row">
+    <span class="speed-lbl">🐢 語速</span>
+    <input type="range" class="speed-slider" id="speed-slider" min="0.3" max="1.2" step="0.05" value="0.75" oninput="updateSpeed(this.value)">
+    <span class="speed-val" id="speed-val">0.75</span>
+    <span class="speed-lbl">🐇</span>
   </div>
   <div class="hint">點格子聽發音・點行標題（如「あ行」）選取/取消整行</div>
 
@@ -584,27 +596,29 @@ if(window.speechSynthesis){
   speechSynthesis.onvoiceschanged = _loadVoice;
 }
 
-let _speakLock = false;
+let _speakRate = 0.75;
+function updateSpeed(val){
+  _speakRate = parseFloat(val);
+  document.getElementById('speed-val').textContent = parseFloat(val).toFixed(2);
+}
+let _speakTimer = null;
 function speak(txt, roma){
   if(roma && settingToast) showToast(txt, roma);
   if(!settingSound) return;
   if(!window.speechSynthesis) return;
-  if(_speakLock) return;
 
-  _speakLock = true;
+  // 取消目前播放，短暫等待後再播新的
   speechSynthesis.cancel();
-
-  const u = new SpeechSynthesisUtterance(txt);
-  u.lang = 'ja-JP';
-  u.rate = 0.75;
-  u.pitch = 1.0;
-  u.volume = 1.0;
-  if(_jpVoice) u.voice = _jpVoice;
-  u.onend = ()=>{ _speakLock = false; };
-  u.onerror = ()=>{ _speakLock = false; };
-  speechSynthesis.speak(u);
-  // 保險解鎖，避免 onend 不觸發
-  setTimeout(()=>{ _speakLock = false; }, 2000);
+  if(_speakTimer) clearTimeout(_speakTimer);
+  _speakTimer = setTimeout(()=>{
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'ja-JP';
+    u.rate = _speakRate;
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    if(_jpVoice) u.voice = _jpVoice;
+    speechSynthesis.speak(u);
+  }, 50);
 }
 let toastTimer=null;
 let _toast=null;
@@ -950,4 +964,5 @@ renderCats();
 renderWords();
 </script>
 </body>
+<!-- build: 2026-06-26 15:01 UTC+8 -->
 </html>
