@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>日文五十音複習</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;background:#f5f4f0;color:#1a1a1a;font-size:14px;}
+
+/* ── Tabs ── */
+.tabs{display:flex;background:#fff;border-bottom:1px solid #e0ddd8;position:sticky;top:0;z-index:20;}
+.tab{flex:1;padding:11px 2px;font-size:11px;border:none;background:none;color:#999;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;}
+.tab.active{color:#1a1a1a;border-bottom:2px solid #4A44A8;font-weight:700;}
+.panel{display:none;padding:12px 10px 24px;}
+.panel.active{display:block;}
+
+/* ── 選範圍：大表 ── */
+.chart-section{margin-bottom:16px;}
+.chart-title{font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;margin-bottom:8px;display:inline-block;}
+.chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
+.chart-table{border-collapse:separate;border-spacing:3px;table-layout:fixed;}
+.chart-table td,.chart-table th{padding:0;vertical-align:middle;text-align:center;}
+/* column header */
+.col-hd{font-size:9px;color:#aaa;text-align:center;padding:3px 0;white-space:nowrap;width:60px;}
+/* row header */
+.row-hd{font-size:11px;font-weight:700;text-align:center;padding:6px 2px;border-radius:8px;white-space:nowrap;cursor:pointer;user-select:none;display:block;width:44px;box-sizing:border-box;}
+/* kana cell */
+.kc{width:60px;height:60px;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:border-color 0.15s,opacity 0.15s;display:flex;align-items:center;justify-content:center;margin:0 auto;}
+.kc:active{opacity:0.75;}
+.kc.selected{border-color:#1a1a1a !important;}
+.kc.dimmed{opacity:0.28;}
+.kc-h{font-size:18px;line-height:1;display:block;padding-top:8px;}
+.kc-k{font-size:12px;color:#555;display:block;margin-top:1px;}
+.kc-r{font-size:9px;color:#888;display:block;margin-top:1px;}
+.kc-empty{width:60px;height:60px;display:block;margin:0 auto;}
+
+/* colour themes per section */
+.sec-sei  .row-hd{background:#FFE0CC;color:#7A3800;}
+.sec-daku .row-hd{background:#D8EED8;color:#1A5C1A;}
+.sec-han  .row-hd{background:#FFD8E8;color:#8C1C50;}
+.sec-you  .row-hd{background:#D8E8FF;color:#1A3C8C;}
+
+.sec-sei  .kc{background:#FFF4EE;}
+.sec-daku .kc{background:#EEF7EE;}
+.sec-han  .kc{background:#FFF0F6;}
+.sec-you  .kc{background:#EEF2FF;}
+
+/* 假名 / 片假名 toggle in cell */
+.dual{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:0;}
+.dual .h{font-size:19px;line-height:1.15;color:#333;font-weight:500;}
+.dual .k{font-size:13px;color:#888;line-height:1.1;}
+.dual .r{font-size:8px;color:#bbb;margin-top:0;}
+
+/* top filter pills */
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.fpill{padding:6px 14px;font-size:12px;border:1.5px solid #ccc;border-radius:99px;cursor:pointer;background:#fff;color:#666;font-weight:500;}
+.fpill.on-h{background:#EEEDFE;border-color:#534AB7;color:#26215C;}
+.fpill.on-k{background:#FFF3E8;border-color:#C45C00;color:#7A3800;}
+.hint{font-size:11px;color:#aaa;margin-bottom:8px;}
+
+/* ── 學筆畫 ── */
+.tri-toggle{display:flex;gap:6px;margin-bottom:12px;}
+.tri-btn{flex:1;padding:9px 4px;font-size:12px;border:1.5px solid #ddd;border-radius:10px;cursor:pointer;background:#fff;color:#888;font-weight:500;text-align:center;line-height:1.3;}
+.tri-btn.active{background:#26215C;border-color:#26215C;color:#fff;}
+.stroke-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;}
+.stroke-card{border:1.5px solid #e8e6e0;border-radius:12px;padding:10px 6px;cursor:pointer;background:#fff;text-align:center;}
+.stroke-card:active{background:#EEEDFE;}
+.sk-char{font-size:28px;line-height:1.2;}
+.sk-roma{font-size:10px;color:#999;margin-top:3px;}
+.stroke-viewer{border:1.5px solid #e8e6e0;border-radius:14px;padding:24px 16px;background:#fff;text-align:center;margin-bottom:12px;}
+.tip-box{background:#f7f6f2;border-radius:12px;padding:14px;margin-bottom:12px;}
+.tip-title{font-size:14px;font-weight:600;margin-bottom:6px;}
+.tip-body{font-size:13px;color:#555;line-height:1.6;}
+.sound-btn{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:7px 16px;border-radius:99px;background:#EEEDFE;color:#3C3489;border:1px solid #AFA9EC;cursor:pointer;margin-top:10px;}
+.back-btn{font-size:13px;color:#888;background:none;border:none;cursor:pointer;padding:0 0 12px 0;display:block;}
+.nav-row{display:flex;gap:8px;justify-content:center;}
+.nav-btn{flex:1;max-width:140px;padding:11px;font-size:13px;border:1.5px solid #ddd;border-radius:10px;background:#fff;cursor:pointer;}
+
+/* ── 測驗 ── */
+.quiz-scores{display:flex;background:#fff;border:1.5px solid #e8e6e0;border-radius:12px;overflow:hidden;margin-bottom:12px;}
+.score-item{flex:1;text-align:center;padding:10px 4px;border-right:1px solid #e8e6e0;}
+.score-item:last-child{border-right:none;}
+.score-num{font-size:22px;font-weight:700;}
+.score-lbl{font-size:10px;color:#999;margin-top:2px;}
+.quiz-box{background:#fff;border:1.5px solid #e8e6e0;border-radius:14px;padding:20px 14px;text-align:center;}
+.quiz-ch{font-size:72px;line-height:1.1;margin-bottom:16px;}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:320px;margin:0 auto;}
+.quiz-opt{padding:13px 8px;font-size:15px;border:1.5px solid #ddd;border-radius:10px;cursor:pointer;background:#fff;transition:all 0.1s;}
+.quiz-opt:active{transform:scale(0.96);}
+.quiz-opt.correct{background:#EAF3DE;border-color:#3B6D11;color:#27500A;}
+.quiz-opt.wrong{background:#FCEBEB;border-color:#A32D2D;color:#501313;}
+.quiz-result{font-size:14px;margin-top:12px;min-height:20px;color:#555;}
+.prog-wrap{height:4px;background:#eee;border-radius:2px;margin-bottom:12px;}
+.prog-bar{height:4px;background:#7F77DD;border-radius:2px;transition:width 0.3s;}
+.btn-main{width:100%;padding:14px;font-size:15px;border:none;border-radius:12px;background:#26215C;color:#fff;font-weight:600;cursor:pointer;margin-bottom:8px;}
+.btn-main:active{background:#3C3489;}
+.mode-card{padding:14px 10px;border:1.5px solid #ddd;border-radius:12px;background:#fff;cursor:pointer;text-align:left;width:100%;}
+.mode-card.active{border-color:#534AB7;background:#EEEDFE;}
+.mode-card.active .mc-title{color:#26215C;}
+.mode-card.active .mc-sub{color:#7F77DD;}
+.mc-icon{font-size:20px;margin-bottom:4px;}
+.mc-title{font-size:13px;font-weight:600;color:#555;}
+.mc-sub{font-size:11px;color:#aaa;margin-top:2px;}
+.sel-summary{background:#fff;border:1.5px solid #e8e6e0;border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.row-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.row-btn{padding:6px 11px;font-size:12px;border:1.5px solid #ddd;border-radius:8px;cursor:pointer;background:#fff;color:#666;}
+.row-btn.sel-h{background:#EEEDFE;border-color:#534AB7;color:#3C3489;font-weight:600;}
+.row-btn.sel-k{background:#FFF3E8;border-color:#C45C00;color:#7A3800;font-weight:600;}
+.ctrl-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.ctrl-btn{padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;color:#666;}
+.section-label{font-size:11px;font-weight:600;color:#aaa;letter-spacing:0.05em;margin:8px 0 5px;}
+
+/* ── 單字字卡 ── */
+.cat-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px;}
+.cat-row{display:flex;gap:6px;white-space:nowrap;}
+.cat-btn{padding:6px 14px;font-size:12px;border:1.5px solid #ddd;border-radius:99px;cursor:pointer;background:#fff;color:#666;}
+.cat-btn.active{background:#E1F5EE;border-color:#0F6E56;color:#085041;font-weight:600;}
+.word-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.word-card{border:1.5px solid #e8e6e0;border-radius:12px;padding:12px 10px;background:#fff;cursor:pointer;position:relative;}
+.word-card:active{background:#E1F5EE;}
+.w-jp{font-size:26px;line-height:1.2;margin-bottom:3px;}
+.w-kana{font-size:11px;color:#888;margin-bottom:2px;}
+.w-tw{font-size:13px;}
+.w-roma{font-size:10px;color:#bbb;font-family:monospace;}
+.w-icon{position:absolute;top:8px;right:8px;font-size:14px;color:#1D9E75;opacity:0.6;}
+.wdetail-jp{font-size:52px;line-height:1.1;margin-bottom:6px;}
+.wdetail-kana{font-size:16px;color:#666;margin-bottom:4px;}
+.wdetail-tw{font-size:20px;font-weight:600;margin-bottom:4px;}
+.wdetail-roma{font-size:13px;color:#aaa;font-family:monospace;}
+.ex-box{background:#f7f6f2;border-radius:12px;padding:14px;margin-top:12px;}
+.ex-jp{font-size:15px;margin-bottom:5px;}
+.ex-tw{font-size:13px;color:#666;}
+.end-box{text-align:center;padding:40px 20px;}
+.end-emoji{font-size:52px;margin-bottom:16px;}
+.end-title{font-size:20px;font-weight:700;margin-bottom:8px;}
+.end-sub{font-size:14px;color:#666;margin-bottom:24px;}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('select')">五十音表</button>
+  <button class="tab" onclick="showTab('stroke')">學筆畫</button>
+  <button class="tab" onclick="showTab('quiz')">測驗</button>
+  <button class="tab" onclick="showTab('words')">單字字卡</button>
+</div>
+
+<!-- ══════════ 五十音表 ══════════ -->
+<div class="panel active" id="tab-select">
+  <div class="filter-bar">
+    <button class="fpill on-h" id="fp-h" onclick="toggleFilter('h')">平假名 ひ</button>
+    <button class="fpill on-k" id="fp-k" onclick="toggleFilter('k')">片假名 カ</button>
+  </div>
+  <div class="hint">點擊格子聽發音・點行標題選取/取消整行</div>
+
+  <!-- 1. 清音 -->
+  <div class="chart-section sec-sei" id="sec-sei">
+    <div class="chart-title" style="background:#FFE0CC;color:#7A3800">1. 清音</div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-sei"></table></div>
+  </div>
+
+  <!-- 2. 濁音 -->
+  <div class="chart-section sec-daku" id="sec-daku">
+    <div class="chart-title" style="background:#D8EED8;color:#1A5C1A">2. 濁音</div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-daku"></table></div>
+  </div>
+
+  <!-- 3. 半濁音 -->
+  <div class="chart-section sec-han" id="sec-han">
+    <div class="chart-title" style="background:#FFD8E8;color:#8C1C50">3. 半濁音</div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-han"></table></div>
+  </div>
+
+  <!-- 4. 拗音 -->
+  <div class="chart-section sec-you" id="sec-you">
+    <div class="chart-title" style="background:#D8E8FF;color:#1A3C8C">4. 拗音</div>
+    <div class="chart-scroll"><table class="chart-table" id="tbl-you"></table></div>
+  </div>
+</div>
+
+<!-- ══════════ 學筆畫 ══════════ -->
+<div class="panel" id="tab-stroke">
+  <div class="tri-toggle" style="max-width:260px">
+    <button class="tri-btn active" id="btn-shira" onclick="setStrokeType('h')">平假名</button>
+    <button class="tri-btn" id="btn-skata" onclick="setStrokeType('k')">片假名</button>
+  </div>
+  <div id="stroke-list">
+    <div style="font-size:12px;color:#888;margin-bottom:6px">點擊假名查看書寫說明</div>
+    <div class="stroke-grid" id="stroke-grid"></div>
+  </div>
+  <div id="stroke-detail" style="display:none">
+    <button class="back-btn" onclick="backToGrid()">← 返回列表</button>
+    <div class="stroke-viewer">
+      <div style="font-size:80px;line-height:1.1" id="sv-char">あ</div>
+      <div style="font-size:14px;color:#888;margin-top:6px;font-family:monospace" id="sv-roma-d"></div>
+      <button class="sound-btn" onclick="speakSV()">🔊 發音</button>
+    </div>
+    <div class="tip-box">
+      <div class="tip-title" id="sv-name"></div>
+      <div class="tip-body" id="sv-tip"></div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="prevStroke()">← 上一個</button>
+      <button class="nav-btn" onclick="nextStroke()">下一個 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 測驗 ══════════ -->
+<div class="panel" id="tab-quiz">
+  <div id="quiz-setup">
+    <div class="tri-toggle">
+      <button class="tri-btn active" id="qb-h" onclick="setQType('h')">平假名<br>ひらがな</button>
+      <button class="tri-btn" id="qb-k" onclick="setQType('k')">片假名<br>カタカナ</button>
+      <button class="tri-btn" id="qb-m" onclick="setQType('m')">混合<br>ひ＋カ</button>
+    </div>
+    <div style="font-size:12px;color:#888;margin-bottom:8px">選擇要測驗的行</div>
+    <div id="q-hira-rows">
+      <div class="section-label" id="q-hira-label">平假名</div>
+      <div class="row-grid" id="q-hira-btns"></div>
+    </div>
+    <div id="q-kata-rows" style="display:none">
+      <div class="section-label" id="q-kata-label">片假名</div>
+      <div class="row-grid" id="q-kata-btns"></div>
+    </div>
+    <div class="ctrl-row">
+      <button class="ctrl-btn" onclick="qSelAll()">全選</button>
+      <button class="ctrl-btn" onclick="qSelNone()">清除</button>
+    </div>
+    <div class="sel-summary">
+      <span style="font-size:13px;color:#555">已選 <strong id="q-sel-count">0</strong> 個假名</span>
+      <span style="font-size:12px;color:#aaa">至少需要 4 個</span>
+    </div>
+    <div style="font-size:12px;color:#888;margin-bottom:8px">測驗模式</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <button class="mode-card active" id="qmode-read" onclick="setQMode('read')">
+        <div class="mc-icon">👁️</div>
+        <div class="mc-title">讀字測驗</div>
+        <div class="mc-sub">看假名 → 選羅馬音</div>
+      </button>
+      <button class="mode-card" id="qmode-listen" onclick="setQMode('listen')">
+        <div class="mc-icon">🔊</div>
+        <div class="mc-title">聽音測驗</div>
+        <div class="mc-sub">聽聲音 → 選日文假名</div>
+      </button>
+    </div>
+    <button class="btn-main" onclick="startQuiz()">開始測驗</button>
+  </div>
+  <div id="quiz-game" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:12px;color:#aaa" id="q-mode-label"></span>
+      <button onclick="endQuiz()" style="font-size:12px;color:#aaa;background:none;border:none;cursor:pointer;">結束</button>
+    </div>
+    <div class="quiz-scores">
+      <div class="score-item"><div class="score-num" id="q-c">0</div><div class="score-lbl">答對</div></div>
+      <div class="score-item"><div class="score-num" id="q-w">0</div><div class="score-lbl">答錯</div></div>
+      <div class="score-item"><div class="score-num" id="q-r">0</div><div class="score-lbl">剩餘</div></div>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="q-prog"></div></div>
+    <div class="quiz-box">
+      <div id="q-read-area"><div class="quiz-ch" id="q-char">あ</div></div>
+      <div id="q-listen-area" style="display:none;margin-bottom:16px;">
+        <button onclick="speakQ()" style="width:80px;height:80px;border-radius:50%;border:none;background:#EEEDFE;cursor:pointer;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">🔊</button>
+        <div style="font-size:11px;color:#aaa;margin-bottom:8px">點播放，選出正確的假名</div>
+        <div id="q-reveal" style="font-size:13px;color:#888;min-height:20px;font-family:monospace;"></div>
+      </div>
+      <div class="quiz-opts" id="q-opts"></div>
+      <div class="quiz-result" id="q-res"></div>
+    </div>
+  </div>
+  <div id="quiz-end" style="display:none">
+    <div class="end-box">
+      <div class="end-emoji">🎌</div>
+      <div class="end-title" id="qe-title"></div>
+      <div class="end-sub" id="qe-sub"></div>
+      <button class="btn-main" onclick="resetQuiz()">再來一次</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 單字字卡 ══════════ -->
+<div class="panel" id="tab-words">
+  <div id="words-list">
+    <div class="cat-scroll"><div class="cat-row" id="cat-row"></div></div>
+    <div class="word-grid" id="word-grid"></div>
+  </div>
+  <div id="words-detail" style="display:none">
+    <button class="back-btn" onclick="backToWords()">← 返回字卡</button>
+    <div class="stroke-viewer">
+      <div class="wdetail-jp" id="wd-jp">犬</div>
+      <div class="wdetail-kana" id="wd-kana"></div>
+      <div class="wdetail-tw" id="wd-tw"></div>
+      <div class="wdetail-roma" id="wd-roma"></div>
+      <button class="sound-btn" onclick="speakWD()">🔊 聽發音</button>
+    </div>
+    <div class="ex-box" id="wd-ex"></div>
+    <div class="nav-row" style="margin-top:12px">
+      <button class="nav-btn" onclick="prevWord()">← 上一個</button>
+      <button class="nav-btn" onclick="nextWord()">下一個 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════
+   五十音資料
+═══════════════════════════════ */
+// 格式: {h:平假名, k:片假名, r:羅馬音}  null=空格
+const SEI_COLS=['あ段','い段','う段','え段','お段'];
+const SEI=[
+  {row:'あ行',cells:[{h:'あ',k:'ア',r:'a'},{h:'い',k:'イ',r:'i'},{h:'う',k:'ウ',r:'u'},{h:'え',k:'エ',r:'e'},{h:'お',k:'オ',r:'o'}]},
+  {row:'か行',cells:[{h:'か',k:'カ',r:'ka'},{h:'き',k:'キ',r:'ki'},{h:'く',k:'ク',r:'ku'},{h:'け',k:'ケ',r:'ke'},{h:'こ',k:'コ',r:'ko'}]},
+  {row:'さ行',cells:[{h:'さ',k:'サ',r:'sa'},{h:'し',k:'シ',r:'shi'},{h:'す',k:'ス',r:'su'},{h:'せ',k:'セ',r:'se'},{h:'そ',k:'ソ',r:'so'}]},
+  {row:'た行',cells:[{h:'た',k:'タ',r:'ta'},{h:'ち',k:'チ',r:'chi'},{h:'つ',k:'ツ',r:'tsu'},{h:'て',k:'テ',r:'te'},{h:'と',k:'ト',r:'to'}]},
+  {row:'な行',cells:[{h:'な',k:'ナ',r:'na'},{h:'に',k:'ニ',r:'ni'},{h:'ぬ',k:'ヌ',r:'nu'},{h:'ね',k:'ネ',r:'ne'},{h:'の',k:'ノ',r:'no'}]},
+  {row:'は行',cells:[{h:'は',k:'ハ',r:'ha'},{h:'ひ',k:'ヒ',r:'hi'},{h:'ふ',k:'フ',r:'fu'},{h:'へ',k:'ヘ',r:'he'},{h:'ほ',k:'ホ',r:'ho'}]},
+  {row:'ま行',cells:[{h:'ま',k:'マ',r:'ma'},{h:'み',k:'ミ',r:'mi'},{h:'む',k:'ム',r:'mu'},{h:'め',k:'メ',r:'me'},{h:'も',k:'モ',r:'mo'}]},
+  {row:'や行',cells:[{h:'や',k:'ヤ',r:'ya'},null,{h:'ゆ',k:'ユ',r:'yu'},null,{h:'よ',k:'ヨ',r:'yo'}]},
+  {row:'ら行',cells:[{h:'ら',k:'ラ',r:'ra'},{h:'り',k:'リ',r:'ri'},{h:'る',k:'ル',r:'ru'},{h:'れ',k:'レ',r:'re'},{h:'ろ',k:'ロ',r:'ro'}]},
+  {row:'わ行',cells:[{h:'わ',k:'ワ',r:'wa'},null,null,null,{h:'を',k:'ヲ',r:'wo'}]},
+  {row:'ん',cells:[{h:'ん',k:'ン',r:'n'},null,null,null,null]},
+];
+const DAKU_COLS=['あ段','い段','う段','え段','お段'];
+const DAKU=[
+  {row:'が行',cells:[{h:'が',k:'ガ',r:'ga'},{h:'ぎ',k:'ギ',r:'gi'},{h:'ぐ',k:'グ',r:'gu'},{h:'げ',k:'ゲ',r:'ge'},{h:'ご',k:'ゴ',r:'go'}]},
+  {row:'ざ行',cells:[{h:'ざ',k:'ザ',r:'za'},{h:'じ',k:'ジ',r:'ji'},{h:'ず',k:'ズ',r:'zu'},{h:'ぜ',k:'ゼ',r:'ze'},{h:'ぞ',k:'ゾ',r:'zo'}]},
+  {row:'だ行',cells:[{h:'だ',k:'ダ',r:'da'},{h:'ぢ',k:'ヂ',r:'ji'},{h:'づ',k:'ヅ',r:'zu'},{h:'で',k:'デ',r:'de'},{h:'ど',k:'ド',r:'do'}]},
+  {row:'ば行',cells:[{h:'ば',k:'バ',r:'ba'},{h:'び',k:'ビ',r:'bi'},{h:'ぶ',k:'ブ',r:'bu'},{h:'べ',k:'ベ',r:'be'},{h:'ぼ',k:'ボ',r:'bo'}]},
+];
+const HAN=[
+  {row:'ぱ行',cells:[{h:'ぱ',k:'パ',r:'pa'},{h:'ぴ',k:'ピ',r:'pi'},{h:'ぷ',k:'プ',r:'pu'},{h:'ぺ',k:'ペ',r:'pe'},{h:'ぽ',k:'ポ',r:'po'}]},
+];
+// 拗音：每組3個 ya/yu/yo
+const YOU_COLS=['〜や','〜ゆ','〜よ'];
+const YOU=[
+  {row:'きゃ行',cells:[{h:'きゃ',k:'キャ',r:'kya'},{h:'きゅ',k:'キュ',r:'kyu'},{h:'きょ',k:'キョ',r:'kyo'}]},
+  {row:'しゃ行',cells:[{h:'しゃ',k:'シャ',r:'sha'},{h:'しゅ',k:'シュ',r:'shu'},{h:'しょ',k:'ショ',r:'sho'}]},
+  {row:'ちゃ行',cells:[{h:'ちゃ',k:'チャ',r:'cha'},{h:'ちゅ',k:'チュ',r:'chu'},{h:'ちょ',k:'チョ',r:'cho'}]},
+  {row:'にゃ行',cells:[{h:'にゃ',k:'ニャ',r:'nya'},{h:'にゅ',k:'ニュ',r:'nyu'},{h:'にょ',k:'ニョ',r:'nyo'}]},
+  {row:'ひゃ行',cells:[{h:'ひゃ',k:'ヒャ',r:'hya'},{h:'ひゅ',k:'ヒュ',r:'hyu'},{h:'ひょ',k:'ヒョ',r:'hyo'}]},
+  {row:'みゃ行',cells:[{h:'みゃ',k:'ミャ',r:'mya'},{h:'みゅ',k:'ミュ',r:'myu'},{h:'みょ',k:'ミョ',r:'myo'}]},
+  {row:'りゃ行',cells:[{h:'りゃ',k:'リャ',r:'rya'},{h:'りゅ',k:'リュ',r:'ryu'},{h:'りょ',k:'リョ',r:'ryo'}]},
+  {row:'ぎゃ行',cells:[{h:'ぎゃ',k:'ギャ',r:'gya'},{h:'ぎゅ',k:'ギュ',r:'gyu'},{h:'ぎょ',k:'ギョ',r:'gyo'}]},
+  {row:'じゃ行',cells:[{h:'じゃ',k:'ジャ',r:'ja'},{h:'じゅ',k:'ジュ',r:'ju'},{h:'じょ',k:'ジョ',r:'jo'}]},
+  {row:'びゃ行',cells:[{h:'びゃ',k:'ビャ',r:'bya'},{h:'びゅ',k:'ビュ',r:'byu'},{h:'びょ',k:'ビョ',r:'byo'}]},
+  {row:'ぴゃ行',cells:[{h:'ぴゃ',k:'ピャ',r:'pya'},{h:'ぴゅ',k:'ピュ',r:'pyu'},{h:'ぴょ',k:'ピョ',r:'pyo'}]},
+];
+
+const TIPS={
+  'あ':'3畫。先寫橫，再寫左側豎撇，最後寫右側的圓圈部分。','い':'2畫。左短撇，右稍長撇，兩筆平行略向右傾。','う':'2畫。先寫頂部短橫，再寫下方彎曲主體。','え':'2畫。先橫再寫Z形轉折筆畫。','お':'3畫。先橫，再寫豎撇，最後圓圈。',
+  'か':'2畫。先寫左側豎撇，再寫右側交叉。','き':'3畫。兩橫一豎撇，最後一橫帶鉤。','く':'1畫。一筆折角，像く字形。','け':'3畫。豎、橫折、最後一撇。','こ':'2畫。上短橫，下長橫。',
+  'さ':'3畫。橫、折撇、最後一彎勾。','し':'1畫。一筆由上往下再勾起。','す':'2畫。先橫再寫下方螺旋筆畫。','せ':'3畫。橫、豎、最後交叉折。','そ':'1畫。一筆連寫兩個類橫折。',
+  'た':'4畫。撇、橫、豎、最後短撇。','ち':'2畫。先橫折，再寫下方圓形。','つ':'1畫。一筆從左上往右下繞圓。','て':'1畫。一筆橫折帶尾。','と':'2畫。豎、加右側短勾。',
+  'な':'4畫。橫、豎撇、圓圈、最後一撇。','に':'3畫。兩豎中間加橫。','ぬ':'2畫。先寫右側撇折，再寫左圓。','ね':'2畫。先撇再寫右側圓形收尾。','の':'1畫。一筆圓形帶出尾。',
+  'は':'3畫。豎、左撇、右撇。','ひ':'2畫。先折再寫右側圓。','ふ':'4畫。橫、折、左撇、右撇。','へ':'1畫。一筆折角，像山形。','ほ':'4畫。豎、橫折、左撇、右撇。',
+  'ま':'3畫。橫、折豎、最後圓勾。','み':'3畫。折、勾、最後一撇圓。','む':'3畫。橫折、豎、最後圓勾。','め':'2畫。左撇圓，右折撇。','も':'3畫。兩橫、豎勾。',
+  'や':'3畫。短撇、折撇、橫撇。','ゆ':'3畫。折勾、橫、下彎。','よ':'2畫。橫、折豎。',
+  'ら':'2畫。短橫，再寫下方彎折撇。','り':'2畫。短撇，再寫右長撇。','る':'1畫。一筆螺旋繞圓。','れ':'2畫。先豎撇，再寫右側折撇。','ろ':'1畫。一筆連折撇，形似ろ。',
+  'わ':'2畫。先撇，再寫右側圓折。','を':'3畫。橫折、撇、最後折勾。','ん':'1畫。一筆彎勾帶撇。',
+};
+const WORDS=[
+  /* ── 動物 ── */
+  {jp:'犬',kana:'いぬ',roma:'inu',tw:'狗',cat:'動物',ex:{jp:'犬が好きです。',tw:'我喜歡狗。'}},
+  {jp:'猫',kana:'ねこ',roma:'neko',tw:'貓',cat:'動物',ex:{jp:'猫はかわいいです。',tw:'貓很可愛。'}},
+  {jp:'魚',kana:'さかな',roma:'sakana',tw:'魚',cat:'動物',ex:{jp:'魚を食べます。',tw:'我吃魚。'}},
+  {jp:'鳥',kana:'とり',roma:'tori',tw:'鳥',cat:'動物',ex:{jp:'鳥が飛んでいます。',tw:'鳥在飛。'}},
+  {jp:'馬',kana:'うま',roma:'uma',tw:'馬',cat:'動物',ex:{jp:'馬に乗りたいです。',tw:'我想騎馬。'}},
+  {jp:'牛',kana:'うし',roma:'ushi',tw:'牛',cat:'動物',ex:{jp:'牛が草を食べます。',tw:'牛吃草。'}},
+  {jp:'豚',kana:'ぶた',roma:'buta',tw:'豬',cat:'動物',ex:{jp:'豚はかわいいです。',tw:'豬很可愛。'}},
+  {jp:'兎',kana:'うさぎ',roma:'usagi',tw:'兔子',cat:'動物',ex:{jp:'兎は耳が長い。',tw:'兔子耳朵很長。'}},
+  {jp:'熊',kana:'くま',roma:'kuma',tw:'熊',cat:'動物',ex:{jp:'熊が山にいます。',tw:'山上有熊。'}},
+  {jp:'猿',kana:'さる',roma:'saru',tw:'猴子',cat:'動物',ex:{jp:'猿は木に登ります。',tw:'猴子爬樹。'}},
+  {jp:'象',kana:'ぞう',roma:'zou',tw:'大象',cat:'動物',ex:{jp:'象は鼻が長い。',tw:'大象鼻子很長。'}},
+  {jp:'虎',kana:'とら',roma:'tora',tw:'老虎',cat:'動物',ex:{jp:'虎は強いです。',tw:'老虎很強。'}},
+  {jp:'狐',kana:'きつね',roma:'kitsune',tw:'狐狸',cat:'動物',ex:{jp:'狐はずるいです。',tw:'狐狸很狡猾。'}},
+  {jp:'狼',kana:'おおかみ',roma:'ookami',tw:'狼',cat:'動物',ex:{jp:'狼が吠えます。',tw:'狼在嚎叫。'}},
+  {jp:'蛇',kana:'へび',roma:'hebi',tw:'蛇',cat:'動物',ex:{jp:'蛇が怖いです。',tw:'我怕蛇。'}},
+  /* ── 食物 ── */
+  {jp:'ご飯',kana:'ごはん',roma:'gohan',tw:'飯',cat:'食物',ex:{jp:'ご飯を食べます。',tw:'吃飯。'}},
+  {jp:'パン',kana:'ぱん',roma:'pan',tw:'麵包',cat:'食物',ex:{jp:'朝はパンを食べます。',tw:'早上吃麵包。'}},
+  {jp:'肉',kana:'にく',roma:'niku',tw:'肉',cat:'食物',ex:{jp:'肉が好きです。',tw:'我喜歡肉。'}},
+  {jp:'野菜',kana:'やさい',roma:'yasai',tw:'蔬菜',cat:'食物',ex:{jp:'野菜を食べてください。',tw:'請吃蔬菜。'}},
+  {jp:'果物',kana:'くだもの',roma:'kudamono',tw:'水果',cat:'食物',ex:{jp:'果物は甘いです。',tw:'水果很甜。'}},
+  {jp:'魚',kana:'さかな',roma:'sakana',tw:'魚（食材）',cat:'食物',ex:{jp:'魚が新鮮です。',tw:'魚很新鮮。'}},
+  {jp:'卵',kana:'たまご',roma:'tamago',tw:'雞蛋',cat:'食物',ex:{jp:'卵を二つ買います。',tw:'買兩顆雞蛋。'}},
+  {jp:'牛乳',kana:'ぎゅうにゅう',roma:'gyuunyuu',tw:'牛奶',cat:'食物',ex:{jp:'毎朝牛乳を飲みます。',tw:'每天早上喝牛奶。'}},
+  {jp:'お茶',kana:'おちゃ',roma:'ocha',tw:'茶',cat:'食物',ex:{jp:'お茶を一杯どうぞ。',tw:'請喝一杯茶。'}},
+  {jp:'コーヒー',kana:'こーひー',roma:'koohii',tw:'咖啡',cat:'食物',ex:{jp:'コーヒーが好きです。',tw:'我喜歡咖啡。'}},
+  {jp:'寿司',kana:'すし',roma:'sushi',tw:'壽司',cat:'食物',ex:{jp:'寿司を食べに行きます。',tw:'去吃壽司。'}},
+  {jp:'ラーメン',kana:'らーめん',roma:'raamen',tw:'拉麵',cat:'食物',ex:{jp:'ラーメンが美味しいです。',tw:'拉麵很好吃。'}},
+  {jp:'餃子',kana:'ぎょうざ',roma:'gyouza',tw:'餃子',cat:'食物',ex:{jp:'餃子を焼きます。',tw:'煎餃子。'}},
+  {jp:'塩',kana:'しお',roma:'shio',tw:'鹽',cat:'食物',ex:{jp:'少し塩を入れます。',tw:'加一點鹽。'}},
+  {jp:'砂糖',kana:'さとう',roma:'satou',tw:'砂糖',cat:'食物',ex:{jp:'砂糖は甘いです。',tw:'砂糖很甜。'}},
+  {jp:'水',kana:'みず',roma:'mizu',tw:'水',cat:'食物',ex:{jp:'水を一杯ください。',tw:'請給我一杯水。'}},
+  /* ── 自然 ── */
+  {jp:'花',kana:'はな',roma:'hana',tw:'花',cat:'自然',ex:{jp:'花がきれいです。',tw:'花很漂亮。'}},
+  {jp:'木',kana:'き',roma:'ki',tw:'樹木',cat:'自然',ex:{jp:'木の下に座ります。',tw:'坐在樹下。'}},
+  {jp:'山',kana:'やま',roma:'yama',tw:'山',cat:'自然',ex:{jp:'山が高いです。',tw:'山很高。'}},
+  {jp:'海',kana:'うみ',roma:'umi',tw:'海',cat:'自然',ex:{jp:'海で泳ぎます。',tw:'在海邊游泳。'}},
+  {jp:'空',kana:'そら',roma:'sora',tw:'天空',cat:'自然',ex:{jp:'空が青いです。',tw:'天空是藍色的。'}},
+  {jp:'川',kana:'かわ',roma:'kawa',tw:'河川',cat:'自然',ex:{jp:'川で魚を釣ります。',tw:'在河邊釣魚。'}},
+  {jp:'湖',kana:'みずうみ',roma:'mizuumi',tw:'湖',cat:'自然',ex:{jp:'湖は静かです。',tw:'湖很寧靜。'}},
+  {jp:'森',kana:'もり',roma:'mori',tw:'森林',cat:'自然',ex:{jp:'森の中を歩きます。',tw:'在森林裡走路。'}},
+  {jp:'草',kana:'くさ',roma:'kusa',tw:'草',cat:'自然',ex:{jp:'草が青々としています。',tw:'草木蒼翠。'}},
+  {jp:'石',kana:'いし',roma:'ishi',tw:'石頭',cat:'自然',ex:{jp:'川で石を拾います。',tw:'在河邊撿石頭。'}},
+  {jp:'雨',kana:'あめ',roma:'ame',tw:'雨',cat:'自然',ex:{jp:'今日は雨が降ります。',tw:'今天下雨。'}},
+  {jp:'雪',kana:'ゆき',roma:'yuki',tw:'雪',cat:'自然',ex:{jp:'雪が降っています。',tw:'正在下雪。'}},
+  {jp:'風',kana:'かぜ',roma:'kaze',tw:'風',cat:'自然',ex:{jp:'風が強いです。',tw:'風很強。'}},
+  {jp:'太陽',kana:'たいよう',roma:'taiyou',tw:'太陽',cat:'自然',ex:{jp:'太陽が輝いています。',tw:'太陽閃耀。'}},
+  {jp:'月',kana:'つき',roma:'tsuki',tw:'月亮',cat:'自然',ex:{jp:'月が明るいです。',tw:'月亮很亮。'}},
+  /* ── 動詞 ── */
+  {jp:'食べる',kana:'たべる',roma:'taberu',tw:'吃',cat:'動詞',ex:{jp:'ご飯を食べます。',tw:'吃飯。'}},
+  {jp:'飲む',kana:'のむ',roma:'nomu',tw:'喝',cat:'動詞',ex:{jp:'お茶を飲みます。',tw:'喝茶。'}},
+  {jp:'見る',kana:'みる',roma:'miru',tw:'看',cat:'動詞',ex:{jp:'テレビを見ます。',tw:'看電視。'}},
+  {jp:'聞く',kana:'きく',roma:'kiku',tw:'聽',cat:'動詞',ex:{jp:'音楽を聞きます。',tw:'聽音樂。'}},
+  {jp:'行く',kana:'いく',roma:'iku',tw:'去',cat:'動詞',ex:{jp:'学校に行きます。',tw:'去學校。'}},
+  {jp:'来る',kana:'くる',roma:'kuru',tw:'來',cat:'動詞',ex:{jp:'友達が来ます。',tw:'朋友來了。'}},
+  {jp:'話す',kana:'はなす',roma:'hanasu',tw:'說話',cat:'動詞',ex:{jp:'日本語で話します。',tw:'用日文說話。'}},
+  {jp:'書く',kana:'かく',roma:'kaku',tw:'寫',cat:'動詞',ex:{jp:'手紙を書きます。',tw:'寫信。'}},
+  {jp:'読む',kana:'よむ',roma:'yomu',tw:'讀',cat:'動詞',ex:{jp:'本を読みます。',tw:'讀書。'}},
+  {jp:'寝る',kana:'ねる',roma:'neru',tw:'睡覺',cat:'動詞',ex:{jp:'早く寝ます。',tw:'早點睡覺。'}},
+  {jp:'起きる',kana:'おきる',roma:'okiru',tw:'起床',cat:'動詞',ex:{jp:'七時に起きます。',tw:'七點起床。'}},
+  {jp:'歩く',kana:'あるく',roma:'aruku',tw:'走路',cat:'動詞',ex:{jp:'公園を歩きます。',tw:'在公園散步。'}},
+  {jp:'走る',kana:'はしる',roma:'hashiru',tw:'跑步',cat:'動詞',ex:{jp:'毎朝走ります。',tw:'每天早上跑步。'}},
+  {jp:'買う',kana:'かう',roma:'kau',tw:'買',cat:'動詞',ex:{jp:'服を買います。',tw:'買衣服。'}},
+  {jp:'売る',kana:'うる',roma:'uru',tw:'賣',cat:'動詞',ex:{jp:'本を売ります。',tw:'賣書。'}},
+  {jp:'使う',kana:'つかう',roma:'tsukau',tw:'使用',cat:'動詞',ex:{jp:'電話を使います。',tw:'使用電話。'}},
+  {jp:'作る',kana:'つくる',roma:'tsukuru',tw:'製作',cat:'動詞',ex:{jp:'料理を作ります。',tw:'做料理。'}},
+  {jp:'遊ぶ',kana:'あそぶ',roma:'asobu',tw:'玩',cat:'動詞',ex:{jp:'公園で遊びます。',tw:'在公園玩。'}},
+  {jp:'勉強する',kana:'べんきょうする',roma:'benkyou suru',tw:'讀書、學習',cat:'動詞',ex:{jp:'日本語を勉強します。',tw:'學習日文。'}},
+  {jp:'働く',kana:'はたらく',roma:'hataraku',tw:'工作',cat:'動詞',ex:{jp:'毎日働きます。',tw:'每天工作。'}},
+  /* ── 形容詞 ── */
+  {jp:'大きい',kana:'おおきい',roma:'ookii',tw:'大的',cat:'形容詞',ex:{jp:'大きい家です。',tw:'是很大的房子。'}},
+  {jp:'小さい',kana:'ちいさい',roma:'chiisai',tw:'小的',cat:'形容詞',ex:{jp:'小さい犬です。',tw:'是小狗。'}},
+  {jp:'いい',kana:'いい',roma:'ii',tw:'好的',cat:'形容詞',ex:{jp:'いい天気ですね。',tw:'天氣真好呢。'}},
+  {jp:'悪い',kana:'わるい',roma:'warui',tw:'壞的',cat:'形容詞',ex:{jp:'天気が悪いです。',tw:'天氣不好。'}},
+  {jp:'新しい',kana:'あたらしい',roma:'atarashii',tw:'新的',cat:'形容詞',ex:{jp:'新しい本を買いました。',tw:'買了新書。'}},
+  {jp:'古い',kana:'ふるい',roma:'furui',tw:'舊的',cat:'形容詞',ex:{jp:'古い建物です。',tw:'是舊建築。'}},
+  {jp:'高い',kana:'たかい',roma:'takai',tw:'高的、貴的',cat:'形容詞',ex:{jp:'この山は高いです。',tw:'這座山很高。'}},
+  {jp:'安い',kana:'やすい',roma:'yasui',tw:'便宜的',cat:'形容詞',ex:{jp:'この店は安いです。',tw:'這家店很便宜。'}},
+  {jp:'多い',kana:'おおい',roma:'ooi',tw:'多的',cat:'形容詞',ex:{jp:'人が多いです。',tw:'人很多。'}},
+  {jp:'少ない',kana:'すくない',roma:'sukunai',tw:'少的',cat:'形容詞',ex:{jp:'時間が少ない。',tw:'時間很少。'}},
+  {jp:'暑い',kana:'あつい',roma:'atsui',tw:'熱的',cat:'形容詞',ex:{jp:'今日は暑いです。',tw:'今天很熱。'}},
+  {jp:'寒い',kana:'さむい',roma:'samui',tw:'冷的',cat:'形容詞',ex:{jp:'冬は寒いです。',tw:'冬天很冷。'}},
+  {jp:'面白い',kana:'おもしろい',roma:'omoshiroi',tw:'有趣的',cat:'形容詞',ex:{jp:'この映画は面白いです。',tw:'這部電影很有趣。'}},
+  {jp:'難しい',kana:'むずかしい',roma:'muzukashii',tw:'難的',cat:'形容詞',ex:{jp:'日本語は難しいです。',tw:'日文很難。'}},
+  {jp:'優しい',kana:'やさしい',roma:'yasashii',tw:'溫柔的',cat:'形容詞',ex:{jp:'優しい人が好きです。',tw:'喜歡溫柔的人。'}},
+  /* ── 時間 ── */
+  {jp:'今日',kana:'きょう',roma:'kyou',tw:'今天',cat:'時間',ex:{jp:'今日は何曜日ですか？',tw:'今天是星期幾？'}},
+  {jp:'明日',kana:'あした',roma:'ashita',tw:'明天',cat:'時間',ex:{jp:'明日また来ます。',tw:'明天再來。'}},
+  {jp:'昨日',kana:'きのう',roma:'kinou',tw:'昨天',cat:'時間',ex:{jp:'昨日は忙しかったです。',tw:'昨天很忙。'}},
+  {jp:'朝',kana:'あさ',roma:'asa',tw:'早上',cat:'時間',ex:{jp:'朝ご飯を食べます。',tw:'吃早餐。'}},
+  {jp:'昼',kana:'ひる',roma:'hiru',tw:'中午',cat:'時間',ex:{jp:'昼ご飯はどこで食べますか？',tw:'午飯在哪裡吃？'}},
+  {jp:'夜',kana:'よる',roma:'yoru',tw:'晚上',cat:'時間',ex:{jp:'夜は涼しいです。',tw:'晚上很涼爽。'}},
+  {jp:'今',kana:'いま',roma:'ima',tw:'現在',cat:'時間',ex:{jp:'今何時ですか？',tw:'現在幾點？'}},
+  {jp:'午前',kana:'ごぜん',roma:'gozen',tw:'上午',cat:'時間',ex:{jp:'午前九時に来てください。',tw:'請上午九點來。'}},
+  {jp:'午後',kana:'ごご',roma:'gogo',tw:'下午',cat:'時間',ex:{jp:'午後から会議があります。',tw:'下午有會議。'}},
+  {jp:'毎日',kana:'まいにち',roma:'mainichi',tw:'每天',cat:'時間',ex:{jp:'毎日練習します。',tw:'每天練習。'}},
+  {jp:'今週',kana:'こんしゅう',roma:'konshuu',tw:'本週',cat:'時間',ex:{jp:'今週は忙しいです。',tw:'本週很忙。'}},
+  {jp:'来週',kana:'らいしゅう',roma:'raishuu',tw:'下週',cat:'時間',ex:{jp:'来週また会いましょう。',tw:'下週再見面吧。'}},
+  {jp:'今月',kana:'こんげつ',roma:'kongetsu',tw:'本月',cat:'時間',ex:{jp:'今月は給料が上がりました。',tw:'本月加薪了。'}},
+  {jp:'来年',kana:'らいねん',roma:'rainen',tw:'明年',cat:'時間',ex:{jp:'来年日本へ行きます。',tw:'明年去日本。'}},
+  {jp:'時間',kana:'じかん',roma:'jikan',tw:'時間',cat:'時間',ex:{jp:'時間がありますか？',tw:'你有時間嗎？'}},
+  /* ── 數字 ── */
+  {jp:'一',kana:'いち',roma:'ichi',tw:'一',cat:'數字',ex:{jp:'一つください。',tw:'請給我一個。'}},
+  {jp:'二',kana:'に',roma:'ni',tw:'二',cat:'數字',ex:{jp:'二人います。',tw:'有兩個人。'}},
+  {jp:'三',kana:'さん',roma:'san',tw:'三',cat:'數字',ex:{jp:'三時に会いましょう。',tw:'三點見面吧。'}},
+  {jp:'四',kana:'し・よん',roma:'shi/yon',tw:'四',cat:'數字',ex:{jp:'四人家族です。',tw:'是四口之家。'}},
+  {jp:'五',kana:'ご',roma:'go',tw:'五',cat:'數字',ex:{jp:'五分待ってください。',tw:'請等五分鐘。'}},
+  {jp:'六',kana:'ろく',roma:'roku',tw:'六',cat:'數字',ex:{jp:'六時に起きます。',tw:'六點起床。'}},
+  {jp:'七',kana:'しち・なな',roma:'shichi/nana',tw:'七',cat:'數字',ex:{jp:'七月が好きです。',tw:'我喜歡七月。'}},
+  {jp:'八',kana:'はち',roma:'hachi',tw:'八',cat:'數字',ex:{jp:'八時に出発します。',tw:'八點出發。'}},
+  {jp:'九',kana:'く・きゅう',roma:'ku/kyuu',tw:'九',cat:'數字',ex:{jp:'九月に旅行します。',tw:'九月去旅行。'}},
+  {jp:'十',kana:'じゅう',roma:'juu',tw:'十',cat:'數字',ex:{jp:'十円です。',tw:'十日圓。'}},
+  {jp:'百',kana:'ひゃく',roma:'hyaku',tw:'百',cat:'數字',ex:{jp:'百円ショップです。',tw:'是百元商店。'}},
+  {jp:'千',kana:'せん',roma:'sen',tw:'千',cat:'數字',ex:{jp:'千円を払います。',tw:'付一千日圓。'}},
+  {jp:'万',kana:'まん',roma:'man',tw:'萬',cat:'數字',ex:{jp:'一万円です。',tw:'是一萬日圓。'}},
+  {jp:'零',kana:'れい・ぜろ',roma:'rei/zero',tw:'零',cat:'數字',ex:{jp:'点数は零です。',tw:'分數是零。'}},
+  {jp:'半',kana:'はん',roma:'han',tw:'半',cat:'數字',ex:{jp:'三時半に来てください。',tw:'請三點半來。'}},
+  /* ── 日常用語 ── */
+  {jp:'ありがとう',kana:'ありがとう',roma:'arigatou',tw:'謝謝',cat:'日常',ex:{jp:'ありがとうございます。',tw:'非常感謝您。'}},
+  {jp:'すみません',kana:'すみません',roma:'sumimasen',tw:'不好意思',cat:'日常',ex:{jp:'すみません、駅はどこですか？',tw:'不好意思，車站在哪？'}},
+  {jp:'おはよう',kana:'おはよう',roma:'ohayou',tw:'早安',cat:'日常',ex:{jp:'おはようございます。',tw:'早上好。'}},
+  {jp:'こんにちは',kana:'こんにちは',roma:'konnichiwa',tw:'你好',cat:'日常',ex:{jp:'こんにちは、元気ですか？',tw:'你好，你還好嗎？'}},
+  {jp:'こんばんは',kana:'こんばんは',roma:'konbanwa',tw:'晚安（問候）',cat:'日常',ex:{jp:'こんばんは、今日はどうでしたか？',tw:'晚上好，今天如何？'}},
+  {jp:'さようなら',kana:'さようなら',roma:'sayounara',tw:'再見',cat:'日常',ex:{jp:'さようなら、またね。',tw:'再見，下次見。'}},
+  {jp:'はい',kana:'はい',roma:'hai',tw:'是、好',cat:'日常',ex:{jp:'はい、わかりました。',tw:'是，我明白了。'}},
+  {jp:'いいえ',kana:'いいえ',roma:'iie',tw:'不是、不',cat:'日常',ex:{jp:'いいえ、知りません。',tw:'不，我不知道。'}},
+  {jp:'お願い',kana:'おねがい',roma:'onegai',tw:'拜託',cat:'日常',ex:{jp:'お願いします。',tw:'拜託了。'}},
+  {jp:'ごめん',kana:'ごめん',roma:'gomen',tw:'對不起',cat:'日常',ex:{jp:'ごめんなさい。',tw:'對不起。'}},
+  {jp:'どうぞ',kana:'どうぞ',roma:'douzo',tw:'請（給予）',cat:'日常',ex:{jp:'どうぞ座ってください。',tw:'請坐。'}},
+  {jp:'大丈夫',kana:'だいじょうぶ',roma:'daijoubu',tw:'沒關係、沒問題',cat:'日常',ex:{jp:'大丈夫ですか？',tw:'你還好嗎？'}},
+  {jp:'わかる',kana:'わかる',roma:'wakaru',tw:'明白',cat:'日常',ex:{jp:'わかりました。',tw:'我明白了。'}},
+  {jp:'知る',kana:'しる',roma:'shiru',tw:'知道',cat:'日常',ex:{jp:'知りません。',tw:'我不知道。'}},
+  {jp:'いただきます',kana:'いただきます',roma:'itadakimasu',tw:'開動了',cat:'日常',ex:{jp:'いただきます！',tw:'我要開動了！'}},
+  /* ── 地點 ── */
+  {jp:'学校',kana:'がっこう',roma:'gakkou',tw:'學校',cat:'地點',ex:{jp:'学校へ行きます。',tw:'去學校。'}},
+  {jp:'駅',kana:'えき',roma:'eki',tw:'車站',cat:'地點',ex:{jp:'駅はどこですか？',tw:'車站在哪裡？'}},
+  {jp:'病院',kana:'びょういん',roma:'byouin',tw:'醫院',cat:'地點',ex:{jp:'病院へ行きます。',tw:'去醫院。'}},
+  {jp:'銀行',kana:'ぎんこう',roma:'ginkou',tw:'銀行',cat:'地點',ex:{jp:'銀行でお金を下ろします。',tw:'在銀行領錢。'}},
+  {jp:'郵便局',kana:'ゆうびんきょく',roma:'yuubinkyoku',tw:'郵局',cat:'地點',ex:{jp:'郵便局で手紙を送ります。',tw:'在郵局寄信。'}},
+  {jp:'スーパー',kana:'すーぱー',roma:'suupaa',tw:'超市',cat:'地點',ex:{jp:'スーパーで買い物します。',tw:'在超市購物。'}},
+  {jp:'コンビニ',kana:'こんびに',roma:'konbini',tw:'便利商店',cat:'地點',ex:{jp:'コンビニで弁当を買います。',tw:'在便利商店買便當。'}},
+  {jp:'レストラン',kana:'れすとらん',roma:'resutoran',tw:'餐廳',cat:'地點',ex:{jp:'レストランで食事をします。',tw:'在餐廳用餐。'}},
+  {jp:'図書館',kana:'としょかん',roma:'toshokan',tw:'圖書館',cat:'地點',ex:{jp:'図書館で勉強します。',tw:'在圖書館讀書。'}},
+  {jp:'公園',kana:'こうえん',roma:'kouen',tw:'公園',cat:'地點',ex:{jp:'公園を散歩します。',tw:'在公園散步。'}},
+  {jp:'空港',kana:'くうこう',roma:'kuukou',tw:'機場',cat:'地點',ex:{jp:'空港まで迎えに行きます。',tw:'去機場接人。'}},
+  {jp:'家',kana:'いえ',roma:'ie',tw:'家',cat:'地點',ex:{jp:'家に帰ります。',tw:'回家。'}},
+  /* ── 家庭 ── */
+  {jp:'父',kana:'ちち',roma:'chichi',tw:'父親（自家）',cat:'家庭',ex:{jp:'父は会社員です。',tw:'父親是上班族。'}},
+  {jp:'母',kana:'はは',roma:'haha',tw:'母親（自家）',cat:'家庭',ex:{jp:'母は料理が上手です。',tw:'母親廚藝很好。'}},
+  {jp:'兄',kana:'あに',roma:'ani',tw:'哥哥（自家）',cat:'家庭',ex:{jp:'兄は大学生です。',tw:'哥哥是大學生。'}},
+  {jp:'姉',kana:'あね',roma:'ane',tw:'姊姊（自家）',cat:'家庭',ex:{jp:'姉は結婚しています。',tw:'姊姊已結婚。'}},
+  {jp:'弟',kana:'おとうと',roma:'otouto',tw:'弟弟',cat:'家庭',ex:{jp:'弟は中学生です。',tw:'弟弟是國中生。'}},
+  {jp:'妹',kana:'いもうと',roma:'imouto',tw:'妹妹',cat:'家庭',ex:{jp:'妹はかわいいです。',tw:'妹妹很可愛。'}},
+  {jp:'子供',kana:'こども',roma:'kodomo',tw:'孩子',cat:'家庭',ex:{jp:'子供が二人います。',tw:'有兩個孩子。'}},
+  {jp:'祖父',kana:'そふ',roma:'sofu',tw:'祖父（自家）',cat:'家庭',ex:{jp:'祖父は七十歳です。',tw:'祖父七十歲。'}},
+  {jp:'祖母',kana:'そぼ',roma:'sobo',tw:'祖母（自家）',cat:'家庭',ex:{jp:'祖母は元気です。',tw:'祖母很健康。'}},
+  {jp:'家族',kana:'かぞく',roma:'kazoku',tw:'家人',cat:'家庭',ex:{jp:'家族と旅行します。',tw:'和家人旅行。'}},
+  /* ── 身體 ── */
+  {jp:'頭',kana:'あたま',roma:'atama',tw:'頭',cat:'身體',ex:{jp:'頭が痛いです。',tw:'頭很痛。'}},
+  {jp:'目',kana:'め',roma:'me',tw:'眼睛',cat:'身體',ex:{jp:'目が大きいです。',tw:'眼睛很大。'}},
+  {jp:'耳',kana:'みみ',roma:'mimi',tw:'耳朵',cat:'身體',ex:{jp:'耳が聞こえません。',tw:'耳朵聽不到。'}},
+  {jp:'鼻',kana:'はな',roma:'hana',tw:'鼻子',cat:'身體',ex:{jp:'鼻が高いです。',tw:'鼻子很高。'}},
+  {jp:'口',kana:'くち',roma:'kuchi',tw:'嘴巴',cat:'身體',ex:{jp:'口を開けてください。',tw:'請張嘴。'}},
+  {jp:'手',kana:'て',roma:'te',tw:'手',cat:'身體',ex:{jp:'手を洗います。',tw:'洗手。'}},
+  {jp:'足',kana:'あし',roma:'ashi',tw:'腳',cat:'身體',ex:{jp:'足が痛いです。',tw:'腳很痛。'}},
+  {jp:'背中',kana:'せなか',roma:'senaka',tw:'背部',cat:'身體',ex:{jp:'背中が痛いです。',tw:'背部很痛。'}},
+  {jp:'お腹',kana:'おなか',roma:'onaka',tw:'肚子',cat:'身體',ex:{jp:'お腹が空きました。',tw:'肚子餓了。'}},
+  {jp:'心',kana:'こころ',roma:'kokoro',tw:'心、內心',cat:'身體',ex:{jp:'心が温かいです。',tw:'內心很溫暖。'}},
+  /* ── 顏色 ── */
+  {jp:'赤',kana:'あか',roma:'aka',tw:'紅色',cat:'顏色',ex:{jp:'赤いバラが好きです。',tw:'我喜歡紅玫瑰。'}},
+  {jp:'青',kana:'あお',roma:'ao',tw:'藍色、綠色',cat:'顏色',ex:{jp:'青い空が好きです。',tw:'我喜歡藍天。'}},
+  {jp:'白',kana:'しろ',roma:'shiro',tw:'白色',cat:'顏色',ex:{jp:'白い雪が降ります。',tw:'下白雪。'}},
+  {jp:'黒',kana:'くろ',roma:'kuro',tw:'黑色',cat:'顏色',ex:{jp:'黒いコートを着ます。',tw:'穿黑色外套。'}},
+  {jp:'黄色',kana:'きいろ',roma:'kiiro',tw:'黃色',cat:'顏色',ex:{jp:'黄色いひまわりです。',tw:'是黃色向日葵。'}},
+  {jp:'緑',kana:'みどり',roma:'midori',tw:'綠色',cat:'顏色',ex:{jp:'緑の木が多いです。',tw:'綠樹很多。'}},
+  {jp:'紫',kana:'むらさき',roma:'murasaki',tw:'紫色',cat:'顏色',ex:{jp:'紫の花が好きです。',tw:'我喜歡紫色的花。'}},
+  {jp:'オレンジ',kana:'おれんじ',roma:'orenji',tw:'橘色',cat:'顏色',ex:{jp:'オレンジ色のシャツです。',tw:'是橘色的衣服。'}},
+  {jp:'ピンク',kana:'ぴんく',roma:'pinku',tw:'粉紅色',cat:'顏色',ex:{jp:'ピンクのドレスです。',tw:'是粉紅色洋裝。'}},
+  {jp:'茶色',kana:'ちゃいろ',roma:'chairo',tw:'咖啡色',cat:'顏色',ex:{jp:'茶色い犬です。',tw:'是咖啡色的狗。'}},
+];
+const CATS=['全部','動物','食物','自然','動詞','形容詞','時間','數字','日常','地點','家庭','身體','顏色'];
+
+/* ═══════════════════════════════
+   工具
+═══════════════════════════════ */
+let showH=true, showK=true;
+function speak(txt){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='ja-JP';u.rate=0.85;speechSynthesis.speak(u);
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function showTab(name){
+  ['select','stroke','quiz','words'].forEach((n,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('active',n===name);
+    document.getElementById('tab-'+n).classList.toggle('active',n===name);
+  });
+}
+
+/* ═══════════════════════════════
+   五十音表 (選範圍)
+═══════════════════════════════ */
+// 選取狀態：key = "sec:rowIdx:colIdx"
+const selected = new Set();
+
+function toggleFilter(type){
+  if(type==='h') showH=!showH;
+  else showK=!showK;
+  // 至少保留一種
+  if(!showH&&!showK){ if(type==='h')showH=true; else showK=true; }
+  document.getElementById('fp-h').className='fpill'+(showH?' on-h':'');
+  document.getElementById('fp-k').className='fpill'+(showK?' on-k':'');
+  renderAllTables();
+}
+
+function cellKey(sec,ri,ci){return `${sec}:${ri}:${ci}`;}
+
+function toggleCell(sec,ri,ci,char){
+  const k=cellKey(sec,ri,ci);
+  if(selected.has(k)) selected.delete(k); else selected.add(k);
+  renderAllTables();
+  speak(char);
+}
+
+function toggleRow(sec,data,ri){
+  // check if all cells in row are selected
+  const row=data[ri];
+  const keys=row.cells.map((c,ci)=>c?cellKey(sec,ri,ci):null).filter(Boolean);
+  const allSel=keys.every(k=>selected.has(k));
+  keys.forEach(k=>allSel?selected.delete(k):selected.add(k));
+  renderAllTables();
+}
+
+function buildTable(tableId, data, cols, sec){
+  const tbl=document.getElementById(tableId);
+  let html='<tr><th style="width:44px;padding:0"></th>';
+  cols.forEach(c=>html+=`<th class="col-hd" style="width:60px">${c}</th>`);
+  html+='</tr>';
+  data.forEach((row,ri)=>{
+    const rowKeys=row.cells.map((c,ci)=>c?cellKey(sec,ri,ci):null).filter(Boolean);
+    const allSel=rowKeys.length>0&&rowKeys.every(k=>selected.has(k));
+    html+=`<tr>`;
+    html+=`<td><div class="row-hd ${allSel?'':'opacity-70'}" onclick="toggleRow('${sec}',${sec==='sei'?'SEI':sec==='daku'?'DAKU':sec==='han'?'HAN':'YOU'},${ri})"
+      style="${allSel?'outline:2px solid #1a1a1a;outline-offset:1px;':''}">${row.row}</div></td>`;
+    row.cells.forEach((c,ci)=>{
+      if(!c){html+=`<td style="width:60px"><div class="kc-empty"></div></td>`;return;}
+      const k=cellKey(sec,ri,ci);
+      const isSel=selected.has(k);
+      html+=`<td style="width:60px"><div class="kc ${isSel?'selected':''}" onclick="toggleCell('${sec}',${ri},${ci},'${c.h}')"><div class="dual">${showH?`<span class="h">${c.h}</span>`:''} ${showK?`<span class="k">${c.k}</span>`:''}<span class="r">${c.r}</span></div></div></td>`;
+    });
+    html+='</tr>';
+  });
+  tbl.innerHTML=html;
+}
+
+function renderAllTables(){
+  buildTable('tbl-sei',SEI,SEI_COLS,'sei');
+  buildTable('tbl-daku',DAKU,DAKU_COLS,'daku');
+  buildTable('tbl-han',HAN,['あ段','い段','う段','え段','お段'],'han');
+  buildTable('tbl-you',YOU,YOU_COLS,'you');
+}
+
+// 預設全選清音
+function initSelect(){
+  SEI.forEach((row,ri)=>row.cells.forEach((c,ci)=>{if(c)selected.add(cellKey('sei',ri,ci));}));
+  renderAllTables();
+}
+
+/* ═══════════════════════════════
+   學筆畫
+═══════════════════════════════ */
+let stType='h',stIdx=0,stList=[];
+const FLAT_H=[];SEI.forEach(row=>row.cells.forEach(c=>{if(c)FLAT_H.push({c:c.h,r:c.r});}));
+const FLAT_K=[];SEI.forEach(row=>row.cells.forEach(c=>{if(c)FLAT_K.push({c:c.k,r:c.r});}));
+
+function setStrokeType(t){
+  stType=t;
+  document.getElementById('btn-shira').classList.toggle('active',t==='h');
+  document.getElementById('btn-skata').classList.toggle('active',t==='k');
+  renderSGrid();backToGrid();
+}
+function renderSGrid(){
+  stList=stType==='h'?FLAT_H:FLAT_K;
+  document.getElementById('stroke-grid').innerHTML=stList.map((c,i)=>
+    `<div class="stroke-card" onclick="openStroke(${i})"><div class="sk-char">${c.c}</div><div class="sk-roma">${c.r}</div></div>`).join('');
+}
+function openStroke(i){
+  stIdx=i;
+  document.getElementById('stroke-list').style.display='none';
+  document.getElementById('stroke-detail').style.display='block';
+  showSD();
+}
+function backToGrid(){
+  document.getElementById('stroke-list').style.display='block';
+  document.getElementById('stroke-detail').style.display='none';
+}
+function showSD(){
+  const c=stList[stIdx];
+  document.getElementById('sv-char').textContent=c.c;
+  document.getElementById('sv-roma-d').textContent=c.r;
+  document.getElementById('sv-name').textContent=`${c.c}（${c.r}）`;
+  document.getElementById('sv-tip').textContent=TIPS[c.c]||'請參考日文書寫教材學習正確筆順。';
+}
+function speakSV(){speak(document.getElementById('sv-char').textContent);}
+function prevStroke(){stIdx=(stIdx-1+stList.length)%stList.length;showSD();}
+function nextStroke(){stIdx=(stIdx+1)%stList.length;showSD();}
+
+/* ═══════════════════════════════
+   測驗
+═══════════════════════════════ */
+let qType='h';
+let qSelH=new Set([0,1,2,3,4,5,6,7,8,9,10]);
+let qSelK=new Set([0,1,2,3,4,5,6,7,8,9,10]);
+let qMode='read';
+let qQueue=[],qPos=0,qC=0,qW=0,qAns=false,curQChar='';
+
+const H_ROWS=[{r:'あ行'},{r:'か行'},{r:'さ行'},{r:'た行'},{r:'な行'},{r:'は行'},{r:'ま行'},{r:'や行'},{r:'ら行'},{r:'わ行'},{r:'ん'}];
+const K_ROWS=[{r:'ア行'},{r:'カ行'},{r:'サ行'},{r:'タ行'},{r:'ナ行'},{r:'ハ行'},{r:'マ行'},{r:'ヤ行'},{r:'ラ行'},{r:'ワ行'},{r:'ン'}];
+
+function setQType(t){
+  qType=t;
+  ['h','k','m'].forEach(x=>document.getElementById('qb-'+x).classList.toggle('active',x===t));
+  document.getElementById('q-hira-rows').style.display=(t==='k')?'none':'block';
+  document.getElementById('q-kata-rows').style.display=(t==='h')?'none':'block';
+  document.getElementById('q-hira-label').style.display=(t==='m')?'block':'none';
+  document.getElementById('q-kata-label').style.display=(t==='m')?'block':'none';
+  renderQRows();
+}
+function renderQRows(){
+  if(qType!=='k'){
+    document.getElementById('q-hira-btns').innerHTML=H_ROWS.map((row,i)=>
+      `<button class="row-btn ${qSelH.has(i)?'sel-h':''}" onclick="toggleQH(${i})">${row.r}</button>`).join('');
+  }
+  if(qType!=='h'){
+    document.getElementById('q-kata-btns').innerHTML=K_ROWS.map((row,i)=>
+      `<button class="row-btn ${qSelK.has(i)?'sel-k':''}" onclick="toggleQK(${i})">${row.r}</button>`).join('');
+  }
+  updateQCount();
+}
+function toggleQH(i){qSelH.has(i)?qSelH.delete(i):qSelH.add(i);renderQRows();}
+function toggleQK(i){qSelK.has(i)?qSelK.delete(i):qSelK.add(i);renderQRows();}
+function qSelAll(){
+  if(qType!=='k') H_ROWS.forEach((_,i)=>qSelH.add(i));
+  if(qType!=='h') K_ROWS.forEach((_,i)=>qSelK.add(i));
+  renderQRows();
+}
+function qSelNone(){
+  if(qType!=='k') qSelH.clear();
+  if(qType!=='h') qSelK.clear();
+  renderQRows();
+}
+function getQKana(){
+  let list=[];
+  const sei=SEI;
+  if(qType!=='k') sei.forEach((row,ri)=>{if(qSelH.has(ri))row.cells.forEach(c=>{if(c)list.push({c:c.h,r:c.r,type:'h'});});});
+  if(qType!=='h') sei.forEach((row,ri)=>{if(qSelK.has(ri))row.cells.forEach(c=>{if(c)list.push({c:c.k,r:c.r,type:'k'});});});
+  return list;
+}
+function getAllQKana(){
+  let list=[];
+  const sei=SEI;
+  if(qType!=='k') sei.forEach(row=>row.cells.forEach(c=>{if(c)list.push({c:c.h,r:c.r,type:'h'});}));
+  if(qType!=='h') sei.forEach(row=>row.cells.forEach(c=>{if(c)list.push({c:c.k,r:c.r,type:'k'});}));
+  return list;
+}
+function updateQCount(){document.getElementById('q-sel-count').textContent=getQKana().length;}
+function setQMode(m){
+  qMode=m;
+  document.getElementById('qmode-read').classList.toggle('active',m==='read');
+  document.getElementById('qmode-listen').classList.toggle('active',m==='listen');
+}
+function speakQ(){speak(curQChar);}
+function startQuiz(){
+  const list=getQKana();
+  if(list.length<4){alert('請至少選擇 4 個假名！');return;}
+  qQueue=shuffle([...list]);qPos=0;qC=0;qW=0;qAns=false;
+  document.getElementById('quiz-setup').style.display='none';
+  document.getElementById('quiz-end').style.display='none';
+  document.getElementById('quiz-game').style.display='block';
+  document.getElementById('q-mode-label').textContent=qMode==='read'?'👁️ 讀字測驗':'🔊 聽音測驗';
+  document.getElementById('q-read-area').style.display=qMode==='listen'?'none':'block';
+  document.getElementById('q-listen-area').style.display=qMode==='listen'?'block':'none';
+  showQ();
+}
+function showQ(){
+  if(qPos>=qQueue.length){showEnd();return;}
+  qAns=false;
+  const q=qQueue[qPos],total=qQueue.length;
+  curQChar=q.c;
+  document.getElementById('q-char').textContent=q.c;
+  document.getElementById('q-r').textContent=total-qPos;
+  document.getElementById('q-c').textContent=qC;
+  document.getElementById('q-w').textContent=qW;
+  document.getElementById('q-prog').style.width=(qPos/total*100)+'%';
+  document.getElementById('q-res').textContent='';
+  if(qMode==='listen') document.getElementById('q-reveal').textContent='';
+  const all=getAllQKana();
+  let opts=[q];
+  if(qMode==='read'){
+    const pool=shuffle(all.filter(c=>c.r!==q.r));
+    while(opts.length<Math.min(4,pool.length+1)) opts.push(pool[opts.length-1]);
+    shuffle(opts);
+    document.getElementById('q-opts').innerHTML=opts.map(o=>
+      `<button class="quiz-opt" style="font-family:monospace" onclick="answerRead('${o.r}','${q.r}')">${o.r}</button>`).join('');
+  } else {
+    const pool=shuffle(all.filter(c=>c.c!==q.c));
+    while(opts.length<Math.min(4,pool.length+1)) opts.push(pool[opts.length-1]);
+    shuffle(opts);
+    document.getElementById('q-opts').innerHTML=opts.map(o=>
+      `<button class="quiz-opt" style="font-size:24px" onclick="answerListen('${o.c}','${q.c}','${q.r}')">${o.c}</button>`).join('');
+    setTimeout(()=>speak(q.c),250);
+  }
+}
+function answerRead(chosen,correct){
+  if(qAns)return; qAns=true;
+  document.querySelectorAll('.quiz-opt').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+    else if(b.textContent===chosen&&chosen!==correct)b.classList.add('wrong');
+  });
+  const ok=chosen===correct;
+  if(ok){qC++;document.getElementById('q-res').textContent='✓ 答對了！';document.getElementById('q-res').style.color='#3B6D11';}
+  else{qW++;document.getElementById('q-res').textContent='✗ 正確答案是 '+correct;document.getElementById('q-res').style.color='#A32D2D';}
+  document.getElementById('q-c').textContent=qC;document.getElementById('q-w').textContent=qW;
+  setTimeout(()=>{qPos++;showQ();},1500);
+}
+function answerListen(chosen,correct,romaOfCorrect){
+  if(qAns)return; qAns=true;
+  document.querySelectorAll('.quiz-opt').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+    else if(b.textContent===chosen&&chosen!==correct)b.classList.add('wrong');
+  });
+  document.getElementById('q-reveal').textContent=correct+' = '+romaOfCorrect;
+  setTimeout(()=>speak(correct),150);
+  const ok=chosen===correct;
+  if(ok){qC++;document.getElementById('q-res').textContent='✓ 答對了！';document.getElementById('q-res').style.color='#3B6D11';}
+  else{qW++;document.getElementById('q-res').textContent='✗ 正確是 '+correct+' ('+romaOfCorrect+')';document.getElementById('q-res').style.color='#A32D2D';}
+  document.getElementById('q-c').textContent=qC;document.getElementById('q-w').textContent=qW;
+  setTimeout(()=>{qPos++;showQ();},1800);
+}
+function showEnd(){
+  document.getElementById('quiz-game').style.display='none';
+  document.getElementById('quiz-end').style.display='block';
+  const total=qQueue.length,pct=Math.round(qC/total*100);
+  document.getElementById('qe-title').textContent=pct>=80?'太棒了！🌸':pct>=50?'繼續加油！':'多練習就會進步！';
+  document.getElementById('qe-sub').textContent=`答對 ${qC} / ${total} 題・正確率 ${pct}%`;
+}
+function endQuiz(){showEnd();}
+function resetQuiz(){document.getElementById('quiz-end').style.display='none';document.getElementById('quiz-setup').style.display='block';}
+
+/* ═══════════════════════════════
+   單字字卡
+═══════════════════════════════ */
+let wCat='全部',wIdx=0,wFiltered=[];
+function speakWD(){speak(document.getElementById('wd-jp').textContent+'、'+document.getElementById('wd-kana').textContent);}
+function renderCats(){
+  document.getElementById('cat-row').innerHTML=CATS.map(c=>
+    `<button class="cat-btn ${wCat===c?'active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+}
+function setCat(c){wCat=c;renderCats();renderWords();}
+function renderWords(){
+  wFiltered=wCat==='全部'?WORDS:WORDS.filter(w=>w.cat===wCat);
+  document.getElementById('word-grid').innerHTML=wFiltered.map((w,i)=>
+    `<div class="word-card" onclick="openWord(${i})">
+      <div class="w-icon">🔊</div>
+      <div class="w-jp">${w.jp}</div>
+      <div class="w-kana">${w.kana}</div>
+      <div class="w-tw">${w.tw}</div>
+      <div class="w-roma">${w.roma}</div>
+    </div>`).join('');
+}
+function openWord(i){wIdx=i;document.getElementById('words-list').style.display='none';document.getElementById('words-detail').style.display='block';showWD();}
+function backToWords(){document.getElementById('words-list').style.display='block';document.getElementById('words-detail').style.display='none';}
+function showWD(){
+  const w=wFiltered[wIdx];
+  document.getElementById('wd-jp').textContent=w.jp;
+  document.getElementById('wd-kana').textContent=w.kana;
+  document.getElementById('wd-tw').textContent=w.tw;
+  document.getElementById('wd-roma').textContent=w.roma;
+  document.getElementById('wd-ex').innerHTML=`<div class="ex-jp">${w.ex.jp}</div><div class="ex-tw">${w.ex.tw}</div>`;
+  speak(w.jp+'、'+w.kana);
+}
+function prevWord(){wIdx=(wIdx-1+wFiltered.length)%wFiltered.length;showWD();}
+function nextWord(){wIdx=(wIdx+1)%wFiltered.length;showWD();}
+
+/* ── Init ── */
+initSelect();
+setStrokeType('h');
+setQType('h');
+renderCats();
+renderWords();
+</script>
+</body>
+</html>
