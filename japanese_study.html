@@ -64,8 +64,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .stoggle.on{background:#E8F5E9;border-color:#388E3C;color:#1B5E20;}
 .stoggle-dot{width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0;transition:background 0.15s;}
 .stoggle.on .stoggle-dot{background:#388E3C;}
-/* toast - 用 position:fixed 但要確保在正確位置 */
-#speak-toast{position:fixed !important;left:50% !important;transform:translateX(-50%) !important;bottom:60px !important;}
+/* toast animation */
+@keyframes toastIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes toastOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(10px)} }
+.toast-show{ animation: toastIn 0.18s ease forwards; }
+.toast-hide{ animation: toastOut 0.2s ease forwards; }
 
 /* ── 學筆畫 ── */
 .tri-toggle{display:flex;gap:6px;margin-bottom:12px;}
@@ -563,78 +566,85 @@ const CATS=['全部','動物','食物','自然','動詞','形容詞','時間','�
    工具
 ═══════════════════════════════ */
 let showH=true, showK=true, settingSound=true, settingToast=true;
-let _currentAudio = null;
+
+// 預先挑選最佳日文語音
+let _jpVoice = null;
+function _loadVoice(){
+  if(!window.speechSynthesis) return;
+  const vs = speechSynthesis.getVoices();
+  _jpVoice = vs.find(v=>v.lang==='ja-JP' && v.name.includes('Google'))
+          || vs.find(v=>v.lang==='ja-JP' && v.name.includes('Microsoft'))
+          || vs.find(v=>v.lang==='ja-JP' && v.localService)
+          || vs.find(v=>v.lang==='ja-JP')
+          || vs.find(v=>v.lang.startsWith('ja'))
+          || null;
+}
+if(window.speechSynthesis){
+  _loadVoice();
+  speechSynthesis.onvoiceschanged = _loadVoice;
+}
+
+let _speakLock = false;
 function speak(txt, roma){
-  // 顯示發音提示 toast
   if(roma && settingToast) showToast(txt, roma);
   if(!settingSound) return;
+  if(!window.speechSynthesis) return;
+  if(_speakLock) return;
 
-  // 停止目前播放中的音檔
-  if(_currentAudio){
-    _currentAudio.pause();
-    _currentAudio.currentTime = 0;
-    _currentAudio = null;
-  }
+  _speakLock = true;
+  speechSynthesis.cancel();
 
-  // 優先用 Google TTS（音質最好）
-  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(txt)}&tl=ja&client=tw-ob&ttsspeed=0.8`;
-  const audio = new Audio(googleUrl);
-  audio.volume = 1.0;
-  _currentAudio = audio;
-
-  audio.play().catch(()=>{
-    // Google TTS 被擋時，fallback 到 Web Speech API
-    _currentAudio = null;
-    if(!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(txt);
-    u.lang = 'ja-JP'; u.rate = 0.7; u.pitch = 1.0;
-    window.speechSynthesis.speak(u);
-  });
+  const u = new SpeechSynthesisUtterance(txt);
+  u.lang = 'ja-JP';
+  u.rate = 0.75;
+  u.pitch = 1.0;
+  u.volume = 1.0;
+  if(_jpVoice) u.voice = _jpVoice;
+  u.onend = ()=>{ _speakLock = false; };
+  u.onerror = ()=>{ _speakLock = false; };
+  speechSynthesis.speak(u);
+  // 保險解鎖，避免 onend 不觸發
+  setTimeout(()=>{ _speakLock = false; }, 2000);
 }
 let toastTimer=null;
+let _toast=null;
 function showToast(char, roma){
-  // 移除舊的 toast
-  const old=document.getElementById('speak-toast');
-  if(old) old.remove();
   if(toastTimer){ clearTimeout(toastTimer); toastTimer=null; }
 
-  const toast=document.createElement('div');
-  toast.id='speak-toast';
-  toast.style.cssText=[
-    'position:fixed',
-    'bottom:60px',
-    'left:0',
-    'right:0',
-    'margin:0 auto',
-    'width:fit-content',
-    'max-width:80vw',
-    'background:rgba(26,22,70,0.93)',
-    'color:#fff',
-    'padding:14px 32px',
-    'border-radius:18px',
-    'font-size:16px',
-    'z-index:9999',
-    'text-align:center',
-    'pointer-events:none',
-    'opacity:0',
-    'transition:opacity 0.2s ease',
-    'box-shadow:0 4px 24px rgba(0,0,0,0.3)',
-    'min-width:130px',
-    'white-space:nowrap'
-  ].join(';');
-  toast.innerHTML=`<span style="font-size:32px;display:block;line-height:1.2;margin-bottom:5px">${char}</span><span style="font-size:13px;opacity:0.8;font-family:monospace;letter-spacing:0.08em">${roma}</span>`;
-  document.body.appendChild(toast);
+  if(!_toast){
+    _toast=document.createElement('div');
+    _toast.style.cssText=[
+      'position:fixed',
+      'bottom:64px',
+      'left:10%','right:10%',
+      'width:80%',
+      'margin:0 auto',
+      'background:rgba(26,22,70,0.92)',
+      'color:#fff',
+      'padding:12px 24px',
+      'border-radius:16px',
+      'z-index:9999',
+      'text-align:center',
+      'pointer-events:none',
+      'box-shadow:0 4px 20px rgba(0,0,0,0.25)',
+      'opacity:0',
+      'transition:opacity 0.15s ease'
+    ].join(';');
+    document.body.appendChild(_toast);
+  }
 
-  // 強制 reflow 再設 opacity，讓 transition 生效
-  toast.getBoundingClientRect();
-  toast.style.opacity='1';
+  _toast.innerHTML=
+    `<span style="font-size:30px;display:block;line-height:1.2;margin-bottom:4px">${char}</span>`+
+    `<span style="font-size:13px;opacity:0.85;font-family:monospace;letter-spacing:0.06em">${roma}</span>`;
 
-  // 2秒後淡出，淡出完再移除
+  // 強制 reflow → 淡入
+  _toast.style.opacity='0';
+  _toast.offsetHeight; // trigger reflow
+  _toast.style.opacity='1';
+
   toastTimer=setTimeout(()=>{
-    toast.style.opacity='0';
-    setTimeout(()=>{ if(toast.parentNode) toast.remove(); }, 250);
-  }, 2000);
+    _toast.style.opacity='0';
+  }, 2200);
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function showTab(name){
